@@ -40,38 +40,33 @@
             <el-container>
                 <el-aside width="200px">
                     <el-menu :default-openeds="['1','1-2']">
-                        <el-submenu v-for="menu in menuList" :index="menu.path">
+                        <el-submenu index="1">
                             <template slot="title">
-                                <i class="fa" :class="menu.icon"></i>
-                                {{menu.title}}
+<!--                                <i class="fa" :class="menu.icon"></i>-->
+                                GUI测试
                             </template>
-<!--                            <template v-for="child in menu.children">-->
-<!--                                <el-menu-item :index="child.path">-->
-<!--                                    <a :href="child.linkUrl" target="right">{{child.title}}</a>-->
-<!--                                </el-menu-item>-->
-<!--                            </template>-->
                             <el-menu-item index="1-1">
                                 <template slot="title">
-                                    <a href="run.html" target="right">脚本运行</a>
+                                    <a href="/runPage" target="right">脚本运行</a>
                                 </template>
                             </el-menu-item>
                             <el-submenu index="1-2">
                                 <template slot="title">目录管理</template>
                                 <el-menu-item index="1-2-1">
-                                    <a href="sikuli.html" target="right">sikuli路径</a>
+                                    <a href="/sikuliPage" target="right">sikuli路径</a>
                                 </el-menu-item>
                                 <el-menu-item index="1-2-2">
-                                    <a href="scripts.html" target="right">脚本目录</a>
+                                    <a href="/scriptPage" target="right">脚本目录</a>
                                 </el-menu-item>
                                 <el-menu-item index="1-2-3">
-                                    <a href="download.html" target="right">下载目录</a>
+                                    <a href="/downloadPage" target="right">下载目录</a>
                                 </el-menu-item>
                             </el-submenu>
                         </el-submenu>
                     </el-menu>
                 </el-aside>
                 <el-container>
-                    <iframe name="right" class="el-main" src="scripts.html" width="100%" height="800px" frameborder="0"></iframe>
+                    <iframe name="right" class="el-main" src="/runPage" width="100%" height="800px" frameborder="0"></iframe>
                 </el-container>
             </el-container>
         </el-container>
@@ -86,11 +81,6 @@
     new Vue({
         el: '#app',
         methods:{
-            getUserInfo(){
-                axios.post("/admin/user/userInfo").then((res)=>{
-                    this.username = res.data;
-                })
-            }
         },
         created() {
 
@@ -122,7 +112,7 @@
                                 {
                                     "path": "/1-2-2",
                                     "title": "脚本目录",
-                                    "linkUrl":"permission.html",
+                                    "linkUrl":"script.html",
                                     "children":[]
                                 },
                                 {
