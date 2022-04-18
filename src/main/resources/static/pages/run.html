@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>测试管理系统</title>
+    <meta name="description" content="测试管理系统">
+    <meta name="keywords" content="测试管理系统">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+
+
+    <!-- Theme included stylesheets -->
+    <link href="../plugins/quill/quill.snow.css" rel="stylesheet">
+    <link href="../plugins/quill/quill.bubble.css" rel="stylesheet">
+
+    <!-- Core build with no theme, formatting, non-essential modules -->
+    <link href="../plugins/quill/quill.core.css" rel="stylesheet">
+    <!-- Main Quill library -->
+    <script src="../plugins/quill/quill.js"></script>
+    <!--        <script src="../plugins/quill/quill.core.js"></script>-->
+</head>
+<body class="hold-transition">
+<div id="app">
+    <div class="content-header">
+        <h1>GUI测试<small>脚本运行</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>GUI测试</el-breadcrumb-item>
+            <el-breadcrumb-item>脚本运行</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="left-group">
+                <div class="input-box">
+                    <el-input
+                            v-model="sikuliPath"
+                            placeholder="请指定sikuli位置..."
+                            @change="setSikuli"
+                            clearable
+                            style="margin-bottom: 20px"
+                    ></el-input>
+
+                    <el-input
+                            v-model="scriptsPath"
+                            placeholder="请输入测试脚本目录..."
+                            @change="getScripts"
+                            clearable
+                            style="margin-bottom: 20px"
+                    ></el-input>
+
+                    <el-input
+                            v-model="downloadPath"
+                            placeholder="请输入下载目录..."
+                            clearable
+                    ></el-input>
+                </div>
+            </div>
+            <div class="mid-group">
+                <el-transfer
+                        class="transfer-class"
+                        filterable
+                        :titles="['所有脚本', '待测脚本']"
+                        ref="transfer"
+                        id="transfer"
+                        v-model="value"
+                        :data="data"
+                >
+          <span
+                  slot-scope="{ option }"
+                  :draggable="!option.disabled"
+                  @dragstart="drag($event, option)"
+          >{{ option.key }} -- {{ option.label }}</span
+          >
+                    <!-- 为了与右侧同高 -->
+                    <el-button
+                            class="transfer-footer"
+                            slot="left-footer"
+                            size="small"
+                            style="display: none"
+                    ></el-button>
+                    <el-button
+                            class="transfer-footer"
+                            slot="right-footer"
+                            size="small"
+                            :loading="loadingbut"
+                            @click="testSelected"
+                            style="margin-left: 5px"
+                    >{{ loadingbuttext }}</el-button
+                    >
+                    <el-button
+                            class="transfer-footer"
+                            slot="right-footer"
+                            size="small"
+                            :disabled="stop_btn_diabled"
+                            @click="stop"
+                            style="margin-left: 5px"
+                    >停止</el-button
+                    >
+                    <el-button
+                            class="transfer-footer"
+                            slot="right-footer"
+                            size="small"
+                            :disabled="download_disable"
+                            @click="download"
+                    >下载测试结果</el-button
+                    >
+                </el-transfer>
+            </div>
+
+            <div class="right-group">
+                <h3>使用说明</h3>
+                <br />
+                <div>
+                    <ol>
+                        <li>在左侧输入绝对路径</li>
+                        <li>在“所有脚本”面板中选中要执行的脚本</li>
+                        <li>点击蓝色按钮 > 传送至“待测脚本”面板</li>
+                        <li>在“待测脚本”中可以拖拽排序,脚本将按顺序执行</li>
+                        <li>运行完成后点击下载结果</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script src="../plugins/sortable/Sortable.min.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script src="../plugins/quill/vue-quill-editor.js"></script>
+<script>
+
+    var vue = new Vue({
+        el: '#app',
+        components: {},
+        props: {},
+        data() {
+            return {
+                scriptsPath: "",
+                sikuliPath: "",
+                downloadPath: "",
+                loadingbut: false,
+                loadingbuttext: "运行",
+                download_disable: true,
+                stop_btn_diabled: true,
+                data: [],
+                value: [],
+                draggingKey: null,
+            };
+        },
+        watch: {},
+        computed: {},
+        methods: {
+            drag(ev, option) {
+                this.draggingKey = option.key;
+            },
+            setSikuli() {
+                console.log("into setSikuli()");
+                this.$axios.post("http://localhost:6630/setSikuliPath", {
+                    sikuliPath: this.sikuliPath,
+                });
+            },
+            getScripts() {
+                this.data = [];
+                this.value = []; // 重新输入脚本目录后，都要清空
+                let that = this;
+                this.$axios
+                    .post("http://localhost:6630/setScriptsPath", {
+                        scriptsPath: this.scriptsPath,
+                    })
+                    .then(
+                        function (response) {
+                            console.log(response.data.data);
+                            let scripts_arr = response.data.data;
+                            for (let i = 0; i < scripts_arr.length; i++) {
+                                that.data.push({
+                                    key: i + 1,
+                                    label: scripts_arr[i],
+                                });
+                            }
+                        },
+                        function (err) {
+                            console.log(err);
+                        }
+                    );
+            },
+
+            testSelected() {
+                let that = this;
+
+                this.download_disable = true;
+
+                if (this.value.length == 0) {
+                    window.alert("未选中任何脚本!");
+                    that.loadingbut = false;
+                    that.download_disable = true;
+                    that.loadingbuttext = "运行";
+                    return;
+                }
+
+                this.loadingbut = true;
+                this.loadingbuttext = "运行中...";
+                this.stop_btn_diabled = false;
+
+                this.$axios
+                    .post("http://localhost:6630/testSelected", {
+                        selected: this.value,
+                        scriptsPath: this.scriptsPath,
+                        sikuliPath: this.sikuliPath,
+                    })
+                    .then(
+                        function (response) {
+                            if (response.data.code == 500) {
+                                window.alert(response.data.reason);
+                                that.loadingbut = false;
+                                that.download_disable = true;
+                                that.loadingbuttext = "运行";
+                            }
+                            if (response.data.code == 200) {
+                                that.loadingbut = false;
+                                that.download_disable = false;
+                                that.loadingbuttext = "运行";
+                                that.stop_btn_diabled = true;
+                            }
+                        },
+                        function (err) {
+                            console.log(err);
+                        }
+                    );
+            },
+
+            download() {
+                // let url = ""
+                // window.open(url)
+                let that = this;
+                this.$axios
+                    .post("http://localhost:6630/download", {
+                        downloadPath: this.downloadPath,
+                    })
+                    .then(function (response) {
+                        if (response.data.code == 200) {
+                            window.alert("下载至" + that.downloadPath);
+                        }
+                        if (response.data.code == 500) {
+                            window.alert(response.data.reason);
+                        }
+                    });
+            },
+
+            stop() {
+                this.stop_btn_diabled = true;
+                let that = this;
+                this.$axios.post("http://localhost:6630/stop").then(function (response) {
+                    if (response.data.code == 200) {
+                        that.loadingbut = false;
+                        that.download_disable = false;
+                        that.loadingbuttext = "运行";
+                    }
+                    if (response.data.code == 500) {
+                        window.alert(response.data.reason);
+                    }
+                });
+            },
+        },
+        created() {},
+        mounted() {
+            const transfer = this.$refs.transfer.$el;
+
+            const rightPanel = transfer
+                .getElementsByClassName("el-transfer-panel")[1]
+                .getElementsByClassName("el-transfer-panel__body")[0];
+            const rightEl = rightPanel.getElementsByClassName(
+                "el-transfer-panel__list"
+            )[0];
+            Sortable.create(rightEl, {
+                animation: 200,
+                onEnd: (evt) => {
+                    const { oldIndex, newIndex } = evt;
+
+                    //上移
+                    if (newIndex < oldIndex) {
+                        let temp = this.value[oldIndex];
+                        for (let index = oldIndex; index > newIndex; index--) {
+                            this.$set(this.value, index, this.value[index - 1]);
+                        }
+                        this.$set(this.value, newIndex, temp);
+                    }
+
+                    //下移
+                    if (newIndex > oldIndex) {
+                        let temp = this.value[oldIndex];
+                        for (let index = oldIndex; index < newIndex; index++) {
+                            this.$set(this.value, index, this.value[index + 1]);
+                        }
+                        this.$set(this.value, newIndex, temp);
+                    }
+                },
+            });
+        },
+    });
+    Vue.use(window.VueQuillEditor);
+</script>
+</html>

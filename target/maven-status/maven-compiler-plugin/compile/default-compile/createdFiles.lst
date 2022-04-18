@@ -1,0 +1,10 @@
+com\yatung\blog\admin\pojo\Permission.class
+vo\PageResult.class
+com\yatung\blog\admin\config\MybatisPlusConfig.class
+com\yatung\blog\admin\service\impl\PermissionServiceImpl.class
+com\yatung\blog\admin\AdminApp.class
+com\yatung\blog\admin\mapper\PermissionMapper.class
+vo\Result.class
+com\yatung\blog\admin\controller\AdminController.class
+com\yatung\blog\admin\model\params\PageParam.class
+com\yatung\blog\admin\service\PermissionService.class
