@@ -123,12 +123,12 @@ public class GUITestController {
         // 开始逐个运行脚本
         results.clear();
         for (int i = 0; i < selected.size(); i++) {
-            // TODO 按 Alt + Shift + c 结束正在运行的Sikuli脚本
+
             // 用户若点击了停止按钮，则不继续执行下一个脚本
             if (needStop) {
                 break;
             }
-            currentScriptFinished = false;
+
             int target = selected.get(i) - 1;   //前端从1编号
             log.info(scriptsName.get(target) + " test start");
             Result result = Command.execScriptToResult(sikuliPath, scriptsFullPath.get(target));
@@ -138,7 +138,7 @@ public class GUITestController {
             log.info(scriptsName.get(target) + " test end");
             result.setScriptName(scriptsName.get(target));
             results.add(result);
-            currentScriptFinished = true;
+
         }
 
         // 未被中途强行停止，全部执行完毕，切回浏览器并弹出系统提示框
@@ -180,9 +180,16 @@ public class GUITestController {
     @RequestMapping("/stop")
     public RestBean stop() {
         needStop = true;
-        while (!currentScriptFinished){
 
-        }
+        // 按 Alt + Shift + c 立即结束正在运行的Sikuli脚本
+        robot.keyPress(KeyEvent.VK_ALT);
+        robot.keyPress(KeyEvent.VK_SHIFT);
+        robot.keyPress(KeyEvent.VK_C);
+
+        robot.keyRelease(KeyEvent.VK_ALT);
+        robot.keyRelease(KeyEvent.VK_SHIFT);
+        robot.keyRelease(KeyEvent.VK_C);
+
         return new RestBean(200,"成功停止");
     }
 }

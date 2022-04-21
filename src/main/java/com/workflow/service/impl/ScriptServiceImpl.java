@@ -1,63 +1,116 @@
 package com.workflow.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.workflow.mapper.ScriptMapper;
 import com.workflow.model.params.PageParam;
-import com.workflow.service.ScriptService;
 import com.workflow.pojo.Script;
-import org.apache.commons.lang3.StringUtils;
+import com.workflow.pojo.json.All;
+import com.workflow.service.ScriptService;
+import com.workflow.util.FastJsonUtils;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import vo.DirResult;
 import vo.PageResult;
 import vo.Result;
 
-import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
-
 
 @Service
 public class ScriptServiceImpl implements ScriptService {
 
-    @Resource
-    private ScriptMapper scriptMapper;
-
     @Override
     public Result listScript(PageParam pageParam) {
-        Page<Script> page = new Page<>(pageParam.getCurrentPage(),pageParam.getPageSize());
-        LambdaQueryWrapper<Script> queryWrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(pageParam.getQueryString())){
-            queryWrapper.eq(Script::getName,pageParam.getQueryString());
-        }
-        Page<Script> scriptPage = scriptMapper.selectPage(page, queryWrapper);
+        Integer currentPage = pageParam.getCurrentPage();
+        Integer pageSize = pageParam.getPageSize();
+
+        All all = FastJsonUtils.readFile("data.json");
+        List<Script> list = all.getScript().getList();
         PageResult<Script> pageResult = new PageResult<>();
-        pageResult.setList(scriptPage.getRecords());
-        pageResult.setTotal(scriptPage.getTotal());
+
+        if (list.size() == 0) {
+            pageResult.setList(null);
+        }
+
+        int startIndex = (currentPage - 1) * pageSize;
+        int endIndex = startIndex + pageSize - 1;
+        List<Script> temp = new ArrayList<>();
+        for (int i = startIndex; i < list.size() && i <= endIndex; i++) {
+            temp.add(list.get(i));
+        }
+        pageResult.setList(temp);
+        pageResult.setTotal(all.getScript().getTotal());
         return Result.success(pageResult);
+
     }
 
+    @SneakyThrows
     @Override
     public Result add(Script script) {
-        this.scriptMapper.insert(script);
+        All all = FastJsonUtils.readFile("data.json");
+        List<Script> list = all.getScript().getList();
+
+        // 分配一个id,自增形式
+        Long id = list.size() == 0 ? 1L : list.get(list.size() - 1).getId() + 1L;
+        script.setId(id);
+
+        // 对象中添加一条script信息
+        list.add(script);
+
+        // 总数加1
+        Long total = all.getScript().getTotal();
+        all.getScript().setTotal(++total);
+
+        // 写回到文件里去
+        String modifiedString = FastJsonUtils.toJSONString(all);
+        FastJsonUtils.writeFile("data.json", modifiedString);
         return Result.success(null);
     }
 
+    @SneakyThrows
     @Override
     public Result update(Script script) {
-        this.scriptMapper.updateById(script);
+        All all = FastJsonUtils.readFile("data.json");
+        List<Script> list = all.getScript().getList();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getId().equals(script.getId())) {
+                list.set(i, script);
+            }
+        }
+        String modifiedString = FastJsonUtils.toJSONString(all);
+        FastJsonUtils.writeFile("data.json", modifiedString);
         return Result.success(null);
     }
 
+    @SneakyThrows
     @Override
     public Result delete(Long id) {
-        this.scriptMapper.deleteById(id);
+        All all = FastJsonUtils.readFile("data.json");
+        // 根据id删除一条script信息
+        List<Script> list = all.getScript().getList();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getId().equals(id))
+                list.remove(list.get(i));
+        }
+        Long total = all.getScript().getTotal();
+        all.getScript().setTotal(--total);
+        // 写回到文件里去
+        String modifiedString = FastJsonUtils.toJSONString(all);
+        FastJsonUtils.writeFile("data.json", modifiedString);
         return Result.success(null);
     }
 
     @Override
     public Result getScriptsDirs() {
-        List<DirResult> scriptsDirs = this.scriptMapper.getScriptsDirs();
-        return Result.success(scriptsDirs);
+        All all = FastJsonUtils.readFile("data.json");
+        List<Script> list = all.getScript().getList();
+        List<DirResult> scriptDirs = new ArrayList<>();
+        if (!list.isEmpty()) {
+            for (int i = 0; i < list.size(); i++) {
+                DirResult temp = new DirResult();
+                temp.setLabel(list.get(i).getPath());
+                temp.setValue(list.get(i).getPath());
+                scriptDirs.add(temp);
+            }
+        }
+        return Result.success(scriptDirs);
     }
-
 }
