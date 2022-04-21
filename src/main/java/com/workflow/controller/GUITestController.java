@@ -123,6 +123,7 @@ public class GUITestController {
         // 开始逐个运行脚本
         results.clear();
         for (int i = 0; i < selected.size(); i++) {
+            // TODO 按 Alt + Shift + c 结束正在运行的Sikuli脚本
             // 用户若点击了停止按钮，则不继续执行下一个脚本
             if (needStop) {
                 break;
