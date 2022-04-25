@@ -148,8 +148,9 @@ public class GUITestController {
 //            robot.keyPress(KeyEvent.VK_TAB);
 //            robot.keyRelease(KeyEvent.VK_ALT);
 //            robot.keyRelease(KeyEvent.VK_TAB);
-
-            JOptionPane.showMessageDialog(null, "脚本全部执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
+            JFrame frame = new JFrame();
+            frame.setAlwaysOnTop(true);
+            JOptionPane.showMessageDialog(frame, "脚本全部执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
         }
 
         return new RestBean<List<Result>>(200, "see data for detail", results);
