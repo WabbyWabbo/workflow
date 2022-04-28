@@ -159,10 +159,11 @@ public class GUITestController {
 
         }
 
-        // 未被中途强行停止，全部正确执行完毕，弹出系统提示框
+        // 弹出系统提示框
         JFrame frame = new JFrame();
         frame.setAlwaysOnTop(true);
         if (!needStop) {
+            // 未被中途强行停止，全部正常执行完毕，
             JOptionPane.showMessageDialog(frame, "脚本全部执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
         } else {
             // 手动停止了，或者错误处理脚本也运行出错
