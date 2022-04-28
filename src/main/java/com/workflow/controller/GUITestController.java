@@ -17,7 +17,9 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -122,6 +124,13 @@ public class GUITestController {
         }
 
 
+        // 创建专属于本次运行的文件夹
+        SimpleDateFormat bartDateFormat =
+                new SimpleDateFormat("EEEE-MMMM-dd-yyyy-HH-mm-ss");
+        String dirName = "cache\\" + bartDateFormat.format(new Date());
+        File cacheDir = new File(dirName);
+        cacheDir.mkdir();
+
         // 开始逐个运行脚本
         results.clear();
         for (int i = 0; i < selected.size(); i++) {
@@ -134,29 +143,39 @@ public class GUITestController {
             int target = selected.get(i) - 1;   //前端从1编号
             log.info(scriptsName.get(target) + " test start");
             Result result = Command.execScriptToResult(sikuliPath, scriptsFullPath.get(target));
-//            if (result.getPass().equals("错误")) {
-//                return new RestBean<>(500, " can't open file 'imageMatch.pyc'");
-//            }
             log.info(scriptsName.get(target) + " test end");
             result.setScriptName(scriptsName.get(target));
             results.add(result);
 
-            // 若当前脚本运行失败，则执行错误处理脚本
+            // 及时写入到cache文件夹内的excel中，以防止后端未正常返回，前端无法点击下载按钮
+            try {
+                // 清空并存入
+                File[] files = cacheDir.listFiles();
+                for (File t : files) {
+                    t.delete();
+                }
+                ExcelUtil.writeExcel(results, dirName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (WriteException e) {
+                e.printStackTrace();
+            }
+
+            // 若当前脚本运行失败，则执行错误处理脚本,清理现场，为下一个脚本做准备
             if (!result.getPass().equals("成功")) {
-                if (failedHandlerPath.isEmpty()){
+                if (failedHandlerPath.isEmpty()) {
                     log.info("do not set failedHandlerPath, continue...");
                     continue;
                 }
                 Result temp = Command.execScriptToResult(sikuliPath, failedHandlerPath);
-                // 错误处理脚本都出错的话，后面就不必要执行了
+                // 错误处理脚本也出错的话，后面就不必要执行了
                 if (!temp.getPass().equals("成功")) {
-                    log.info("failedHandler failed too!!!");
+                    log.info("failedHandler failed too!!! it's info as follow");
                     log.info(temp.getAllInfo());
                     needStop = true;
                     break;
                 }
             }
-
         }
 
         // 弹出系统提示框
