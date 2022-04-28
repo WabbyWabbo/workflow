@@ -18,7 +18,7 @@ public class AdminApp {
         //运行前检查用户的data.json是否存在
         File file = new File("data.json");
         if (!file.exists()) {
-            FastJsonUtils.writeFile("data.json","{\"download\":{\"list\":[],\"total\":0},\"script\":{\"list\":[],\"total\":0},\"sikuli\":{\"list\":[],\"total\":0}}");
+            FastJsonUtils.writeFile("data.json","{\"download\":{\"list\":[],\"total\":0},\"script\":{\"list\":[],\"total\":0},\"sikuli\":{\"list\":[],\"total\":0},\"failedHandler\":{\"list\":[],\"total\":0}}");
         }
     }
 }
