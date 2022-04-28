@@ -88,6 +88,14 @@
                             :value="item.value">
                     </el-option>
                 </el-select>
+                <el-select v-model="failedHandlerPath" filterable placeholder="请选择失败处理脚本">
+                    <el-option
+                            v-for="item in failedHandlerDirs"
+                            :key="item.label"
+                            :label="item.label"
+                            :value="item.value">
+                    </el-option>
+                </el-select>
             </div>
 
             <div style="margin-top:50px;">
@@ -166,6 +174,7 @@
                     scriptsPath: "",
                     sikuliPath: "",
                     downloadPath: "",
+                    failedHandlerPath:"",
                     loadingbut: false,
                     loadingbuttext: "运行",
                     download_disable: true,
@@ -182,6 +191,10 @@
                         label: '样例'
                     }],
                     downloadDirs: [{
+                        value: '选项1',
+                        label: '样例'
+                    }],
+                    failedHandlerDirs: [{
                         value: '选项1',
                         label: '样例'
                     }],
@@ -241,6 +254,7 @@
                             selected: this.selected,
                             scriptsPath: this.scriptsPath,
                             sikuliPath: this.sikuliPath,
+                            failedHandlerPath:this.failedHandlerPath,
                         })
                         .then(
                             function (response) {
@@ -321,6 +335,14 @@
                     // console.log(res.data)
                     if (res.data.success) {
                         this.downloadDirs = res.data.data;
+                    }
+                }).catch((error) => {
+                    console.log(error);
+                });
+                axios.get("/getFailedHandlerDirs").then((res) => {
+                    // console.log(res.data)
+                    if (res.data.success) {
+                        this.failedHandlerDirs = res.data.data;
                     }
                 }).catch((error) => {
                     console.log(error);

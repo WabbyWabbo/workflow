@@ -11,4 +11,5 @@ public class All {
     private SikuliVO sikuli;
     private ScriptVO script;
     private DownloadVO download;
+    private FailedHandlerVO failedHandler;
 }

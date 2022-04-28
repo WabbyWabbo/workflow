@@ -29,4 +29,9 @@ public class DefaultPageController {
     public String toDownloadPage() {
         return "../static/pages/download";
     }
+
+    @RequestMapping("/failedHandlerPage")
+    public String toFailedHandlerPage() {
+        return "../static/pages/failedHandler";
+    }
 }

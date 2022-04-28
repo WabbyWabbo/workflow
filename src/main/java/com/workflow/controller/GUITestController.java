@@ -28,9 +28,10 @@ public class GUITestController {
     String sikuliPath;
     String scriptsPath;
     String downloadPath;
+    String failedHandlerPath;
     Robot robot = null;
     boolean needStop;
-    boolean currentScriptFinished;
+    boolean partialSuccess;
 
     List<String> scriptsFullPath = new ArrayList<>();
     List<String> scriptsName = new ArrayList<>();
@@ -77,6 +78,7 @@ public class GUITestController {
 
         scriptsPath = (String) map.get("scriptsPath");
         sikuliPath = (String) map.get("sikuliPath");
+        failedHandlerPath = (String) map.get("failedHandlerPath");
 
         //运行前检查用户设置的sikuli.jar是否存在
         File file = new File(sikuliPath);
@@ -132,24 +134,39 @@ public class GUITestController {
             int target = selected.get(i) - 1;   //前端从1编号
             log.info(scriptsName.get(target) + " test start");
             Result result = Command.execScriptToResult(sikuliPath, scriptsFullPath.get(target));
-            if (result.getPass().equals("错误")) {
-                return new RestBean<>(500, " can't open file 'imageMatch.pyc'");
-            }
+//            if (result.getPass().equals("错误")) {
+//                return new RestBean<>(500, " can't open file 'imageMatch.pyc'");
+//            }
             log.info(scriptsName.get(target) + " test end");
             result.setScriptName(scriptsName.get(target));
             results.add(result);
 
+            // 若当前脚本运行失败，则执行错误处理脚本
+            if (!result.getPass().equals("成功")) {
+                if (failedHandlerPath.isEmpty()){
+                    log.info("do not set failedHandlerPath, continue...");
+                    continue;
+                }
+                Result temp = Command.execScriptToResult(sikuliPath, failedHandlerPath);
+                // 错误处理脚本都出错的话，后面就不必要执行了
+                if (!temp.getPass().equals("成功")) {
+                    log.info("failedHandler failed too!!!");
+                    log.info(temp.getAllInfo());
+                    needStop = true;
+                    break;
+                }
+            }
+
         }
 
-        // 未被中途强行停止，全部执行完毕，切回浏览器并弹出系统提示框
-        if (!needStop){
-//            robot.keyPress(KeyEvent.VK_ALT);
-//            robot.delay(1000);
-//            robot.keyPress(KeyEvent.VK_TAB);
-//            robot.keyRelease(KeyEvent.VK_ALT);
-//            robot.keyRelease(KeyEvent.VK_TAB);
-
-            JOptionPane.showMessageDialog(null, "脚本全部执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
+        // 未被中途强行停止，全部正确执行完毕，弹出系统提示框
+        JFrame frame = new JFrame();
+        frame.setAlwaysOnTop(true);
+        if (!needStop) {
+            JOptionPane.showMessageDialog(frame, "脚本全部执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
+        } else {
+            // 手动停止了，或者错误处理脚本也运行出错
+            JOptionPane.showMessageDialog(frame, "执行了前" + results.size() + "个脚本", "运行中断", JOptionPane.PLAIN_MESSAGE);
         }
 
         return new RestBean<List<Result>>(200, "see data for detail", results);
@@ -190,7 +207,7 @@ public class GUITestController {
         robot.keyRelease(KeyEvent.VK_SHIFT);
         robot.keyRelease(KeyEvent.VK_C);
 
-        return new RestBean(200,"成功停止");
+        return new RestBean(200, "成功停止");
     }
 }
 
