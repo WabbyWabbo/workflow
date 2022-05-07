@@ -25,5 +25,10 @@ public class AdminApp {
         if (!cache.exists() && !cache.isDirectory()) {
             cache.mkdir();
         }
+        // 如果cache/log文件夹不存在则创建
+        File log = new File("cache/log");
+        if (!log.exists() && !log.isDirectory()) {
+            log.mkdir();
+        }
     }
 }
