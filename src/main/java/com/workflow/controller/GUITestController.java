@@ -168,9 +168,12 @@ public class GUITestController {
                     continue;
                 }
                 if (result.getAllInfo().contains("[Error]") && !result.getAllInfo().contains("error")) {
+                    log.info("only contains [Error], continue...");
                     continue;
                 }
+                log.info("failedHandler start");
                 Result temp = Command.execScriptToResult(sikuliPath, failedHandlerPath);
+                log.info("failedHandler end");
                 // 错误处理脚本也出错的话，后面就不必要执行了
                 if (!temp.getPass().equals("成功")) {
                     log.info("failedHandler failed too!!! it's info as follow");
