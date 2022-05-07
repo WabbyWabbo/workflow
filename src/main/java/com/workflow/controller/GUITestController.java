@@ -167,6 +167,9 @@ public class GUITestController {
                     log.info("do not set failedHandlerPath, continue...");
                     continue;
                 }
+                if (result.getAllInfo().contains("[Error]") && !result.getAllInfo().contains("error")) {
+                    continue;
+                }
                 Result temp = Command.execScriptToResult(sikuliPath, failedHandlerPath);
                 // 错误处理脚本也出错的话，后面就不必要执行了
                 if (!temp.getPass().equals("成功")) {
