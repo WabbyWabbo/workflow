@@ -18,7 +18,7 @@ public class Command {
      * @return
      */
     public static Result execScriptToResult(String sikuliPath, String scriptName) {
-        String commandStr = "java -Dsikuli.FromCommandLine -jar "
+        String commandStr = "java -Dfile.encoding=UTF-8 -Dsikuli.FromCommandLine -jar "
                 + sikuliPath + " -r "
                 + scriptName;
         String resultString = exeCmd(commandStr);

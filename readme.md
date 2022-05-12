@@ -1,0 +1,1 @@
+`java -Dfile.encoding=UTF-8 -Djava.awt.headless=false -jar workflow.jar`
