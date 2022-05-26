@@ -3,8 +3,6 @@ package com.workflow.util;
 import com.workflow.resp.data.Result;
 import lombok.extern.java.Log;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
@@ -136,13 +134,6 @@ public class Command {
             while ((line = br.readLine()) != null) {
 
                 log.info(line);
-
-                if(line.equals("[##Enter]")){
-                    Robot r = new Robot();
-                    r.keyPress(KeyEvent.VK_ENTER);
-                    r.keyRelease(KeyEvent.VK_ENTER);
-                    log.info("press enter by robot.");
-                }
 
                 // [DEBUG]不计入有效信息
                 if (!line.startsWith("[DEBUG STARTUP]")) {
