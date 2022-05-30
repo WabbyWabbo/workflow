@@ -34,4 +34,14 @@ public class DefaultPageController {
     public String toFailedHandlerPage() {
         return "../static/pages/failedHandler";
     }
+
+    @RequestMapping("/editorPage")
+    public String toEditorPage() {
+        return "../static/pages/editor";
+    }
+
+    @RequestMapping("/codePage")
+    public String toCodePage() {
+        return "../static/pages/code";
+    }
 }

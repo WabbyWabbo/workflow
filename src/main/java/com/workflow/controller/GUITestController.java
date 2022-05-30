@@ -59,7 +59,7 @@ public class GUITestController {
             return new RestBean<>(500, "脚本目录不能为空!");
         }
 
-        List<File> files = FileUtil.getFiles(scriptsPath);
+        List<File> files = FileUtil.getScripts(scriptsPath);
         scriptsFullPath.clear();
         scriptsName.clear();
         //后端保存全路径名,只返回脚本名称给前端
@@ -94,7 +94,7 @@ public class GUITestController {
 
         // 若仅重启服务端，有些数据被清掉，这里恢复一下
         if (scriptsFullPath.size() == 0 || scriptsName.size() == 0) {
-            List<File> files = FileUtil.getFiles(scriptsPath);
+            List<File> files = FileUtil.getScripts(scriptsPath);
             files.forEach(f -> {
                 scriptsFullPath.add(f.getAbsolutePath());
                 scriptsName.add(f.getName().replace(".sikuli", ""));
