@@ -1,12 +1,12 @@
 package com.workflow.controller;
 
 import com.workflow.util.Command;
-import com.workflow.util.ExcelUtil;
+import com.workflow.util.EasyExcelUtil;
 import com.workflow.util.FileUtil;
 import com.workflow.resp.RestBean;
 import com.workflow.resp.data.Result;
-import jxl.write.WriteException;
 import lombok.extern.java.Log;
+import org.joda.time.DateTime;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -127,7 +127,8 @@ public class GUITestController {
         // 创建专属于本次运行的文件夹
         SimpleDateFormat bartDateFormat =
                 new SimpleDateFormat("EEEE-MMMM-dd-yyyy-HH-mm-ss");
-        String dirName = "cache\\" + bartDateFormat.format(new Date());
+        DateTime dateTime = new DateTime();
+        String dirName = "cache\\" + dateTime.toString("yyyy年MM月dd日HH时mm分ss秒");
         File cacheDir = new File(dirName);
         cacheDir.mkdir();
 
@@ -154,10 +155,8 @@ public class GUITestController {
                 for (File t : files) {
                     t.delete();
                 }
-                ExcelUtil.writeExcel(results, dirName);
+                EasyExcelUtil.writeExcel(results, dirName);
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (WriteException e) {
                 e.printStackTrace();
             }
 
@@ -185,8 +184,8 @@ public class GUITestController {
         }
 
         // 弹出系统提示框
-        Thread t = new Thread(new Runnable(){
-            public void run(){
+        Thread t = new Thread(new Runnable() {
+            public void run() {
                 JFrame frame = new JFrame();
                 frame.setAlwaysOnTop(true);
                 log.info("Show message dialog.");
@@ -215,11 +214,9 @@ public class GUITestController {
         }
 
         try {
-            ExcelUtil.writeExcel(results, downloadPath);
+            EasyExcelUtil.writeExcel(results, downloadPath);
         } catch (IOException e) {
             return new RestBean(500, "下载路径设置错误");
-        } catch (WriteException e) {
-            return new RestBean(500, "无法写入文件");
         }
 
 
