@@ -5,6 +5,7 @@ import com.workflow.util.EasyExcelUtil;
 import com.workflow.util.FileUtil;
 import com.workflow.resp.RestBean;
 import com.workflow.resp.data.Result;
+import com.workflow.util.RobotUtil;
 import lombok.extern.java.Log;
 import org.joda.time.DateTime;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -106,22 +107,7 @@ public class GUITestController {
         }
 
         // 最小化浏览器界面
-        try {
-            robot = new Robot();
-            robot.setAutoDelay(1000);
-
-            robot.keyPress(KeyEvent.VK_ALT);
-            robot.keyPress(KeyEvent.VK_SPACE);
-            robot.keyPress(KeyEvent.VK_N);
-
-            robot.keyRelease(KeyEvent.VK_ALT);
-            robot.keyRelease(KeyEvent.VK_SPACE);
-            robot.keyRelease(KeyEvent.VK_N);
-        } catch (AWTException e) {
-            e.printStackTrace();
-            //TODO 前端要处理299响应
-            return new RestBean<>(299, "最小化失败，请手动最小化");
-        }
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT,KeyEvent.VK_SPACE,KeyEvent.VK_N);
 
 
         // 创建专属于本次运行的文件夹
@@ -228,13 +214,7 @@ public class GUITestController {
         needStop = true;
 
         // 按 Alt + Shift + c 立即结束正在运行的Sikuli脚本
-        robot.keyPress(KeyEvent.VK_ALT);
-        robot.keyPress(KeyEvent.VK_SHIFT);
-        robot.keyPress(KeyEvent.VK_C);
-
-        robot.keyRelease(KeyEvent.VK_ALT);
-        robot.keyRelease(KeyEvent.VK_SHIFT);
-        robot.keyRelease(KeyEvent.VK_C);
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT,KeyEvent.VK_SHIFT,KeyEvent.VK_C);
 
         return new RestBean(200, "成功停止");
     }

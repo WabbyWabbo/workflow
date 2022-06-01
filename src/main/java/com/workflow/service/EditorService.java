@@ -10,4 +10,8 @@ public interface EditorService {
     Result getCodeContent(HashMap<String, String> map);
 
     Result saveContent(HashMap<String, String> map);
+
+    Result capture(HashMap<String, String> map);
+
+    Result previewPicture(HashMap<String, String> map);
 }

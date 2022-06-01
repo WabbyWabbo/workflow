@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>Editor</title>
-  <style type="text/css" media="screen">
-    body {
-        overflow: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Editor</title>
+    <style type="text/css" media="screen">
+        body {
+            overflow: hidden;
+        }
 
-    #editor {
-        margin: 0;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
-  </style>
+        #editor {
+            margin: 0;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -31,42 +31,51 @@
 <script src="../plugins/ace/mode-python.js" type="text/JavaScript" charset="utf-8"></script>
 <script>
     let app = new Vue({
-      el: '#editor',
-      data() {
-        return {
-          code:'',
-        };
-      },
-      mounted() {
-        let editor = ace.edit("editor");
-        editor.setTheme("ace/theme/xcode");
-        editor.session.setMode("ace/mode/python");
+        el: '#editor',
+        data() {
+            return {
+                code: '',
+            };
+        },
+        mounted() {
+            let editor = ace.edit("editor");
+            editor.setTheme("ace/theme/xcode");
+            editor.session.setMode("ace/mode/python");
 
-        editor.getSession().on ('change', function () {
-          this.code = editor.getValue();
-          window.parent.postMessage(this.code,'*');
-        });
+            this.selectedText = editor.getSelectedText();
 
-        function receiveMessage(e) {
-          if(e.origin !== 'http://localhost:6630') {
-            alert('来源错误');
-            return false;
-          }
-          else{
-            // console.log(e.data);
-            if (e.data.startsWith('[view]')){
-              editor.setReadOnly(true);
-              editor.setValue(e.data.replace("[view]",""));
+            editor.getSession().on('change', function () {
+                this.code = editor.getValue();
+                window.parent.postMessage(this.code, '*');
+            });
+
+            function receiveMessage(e) {
+                if (e.origin !== 'http://localhost:6630') {
+                    alert('来源错误');
+                    return false;
+                } else {
+                    // console.log(e.data);
+                    if (e.data.startsWith('[view]')) {
+                        editor.setReadOnly(true);
+                        editor.setValue(e.data.replace("[view]", ""));
+                    }
+                    if (e.data.startsWith('[edit]')) {
+                        editor.setReadOnly(false);
+                        editor.setValue(e.data.replace('[edit]', ''));
+                    }
+                    if (e.data.startsWith('[picName]')) {
+                        editor.insert('"' + e.data.replace('[picName]', '') + '"')
+                    }
+                }
             }
-            if (e.data.startsWith('[edit]')){
-              editor.setReadOnly(false);
-              editor.setValue(e.data.replace("[edit]",""));
-            }
-          }
-        }
 
-        window.addEventListener('message', receiveMessage, false);
-      },
+            window.addEventListener('message', receiveMessage, false);
+
+            editor.on("blur", function () {
+                // console.log(editor.getSelectedText());
+                window.parent.postMessage('[selectedText]'+editor.getSelectedText(), '*');
+            })
+        },
     });
 </script>
 

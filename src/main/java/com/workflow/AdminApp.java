@@ -30,5 +30,10 @@ public class AdminApp {
         if (!log.exists() && !log.isDirectory()) {
             log.mkdir();
         }
+        // 如果pic_temp文件夹不存在则创建
+        File pic_temp = new File("C:\\pic_temp");
+        if (!pic_temp.exists() && !pic_temp.isDirectory()) {
+            pic_temp.mkdir();
+        }
     }
 }
