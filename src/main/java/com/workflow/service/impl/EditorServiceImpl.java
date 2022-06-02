@@ -27,6 +27,9 @@ public class EditorServiceImpl implements EditorService {
     private String mImagesPath = "C:\\pic_temp";
     private Set<String> pictureNames = new HashSet<>();
 
+    public static volatile boolean captureFinished = false;
+    public static volatile boolean captureCanceled = false;
+
     @SneakyThrows
     @Override
     public Result getCodeContent(HashMap<String, String> map) {
@@ -76,14 +79,34 @@ public class EditorServiceImpl implements EditorService {
         String scriptDir = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli\\";
         String fileName = String.valueOf(System.currentTimeMillis()) + ".png";
 
+        // 监听鼠标事件
+        captureFinished = false;
+        captureCanceled = false;
+        // 等待鼠标松开 或者 取消本次截图
+        while (!captureFinished && !captureCanceled) {
+            // 超过10秒，强制结束等待
+            long time = System.currentTimeMillis() - Long.parseLong(fileName.replace(".png", ""));
+            if (time > 10000) {
+                log.info("超过10秒");
+                break;
+            }
+        }
+
+        // 截图完毕，判断用户是否截图完成
+        if (captureCanceled) {
+            log.info("按Esc取消了截图");
+            return Result.fail(500, "截图失败");
+        }
+
         // 从剪贴板获取图片
-        Thread.sleep(6000);
+//        Thread.sleep(6000);
         Image imageFromClipboard = ClipboardOperate.getImageFromClipboard();
 
         if (imageFromClipboard == null) {
-            log.warning("剪贴板中获取截图失败");
+            log.warning("剪贴板中没有截图");
             return Result.fail(500, "截图失败");
         }
+
 
         // 保存新截得图到该脚本目录下
         File file = new File(scriptDir + fileName);

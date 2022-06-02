@@ -4,24 +4,35 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
 import com.github.kwhat.jnativehook.mouse.NativeMouseInputListener;
+import com.workflow.service.impl.EditorServiceImpl;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GlobalMouseListener implements NativeMouseInputListener {
 //    public void nativeMouseClicked(NativeMouseEvent e) {
 //        System.out.println("Mouse Clicked: " + e.getClickCount());
 //    }
 //
     public void nativeMousePressed(NativeMouseEvent e) {
-        System.out.println("Mouse Pressed: " + e.getButton());
+        log.debug("Mouse Pressed:" + e.getPoint());
+        EditorServiceImpl.captureFinished = false;
     }
 
     public void nativeMouseReleased(NativeMouseEvent e) {
-        System.out.println("Mouse Released: " + e.getButton());
+        log.debug("Mouse Released:" + e.getPoint());
+        EditorServiceImpl.captureFinished = true;
+//        try {
+//            GlobalScreen.unregisterNativeHook();
+//        } catch (NativeHookException nativeHookException) {
+//            nativeHookException.printStackTrace();
+//        }
     }
-//
+
 //    public void nativeMouseMoved(NativeMouseEvent e) {
 //        System.out.println("Mouse Moved: " + e.getX() + ", " + e.getY());
 //    }
-//
+
 //    public void nativeMouseDragged(NativeMouseEvent e) {
 //        System.out.println("Mouse Dragged: " + e.getX() + ", " + e.getY());
 //    }
@@ -41,6 +52,6 @@ public class GlobalMouseListener implements NativeMouseInputListener {
 
         // Add the appropriate listeners.
         GlobalScreen.addNativeMouseListener(example);
-//        GlobalScreen.addNativeMouseMotionListener(example);
+        GlobalScreen.addNativeMouseMotionListener(example);
     }
 }

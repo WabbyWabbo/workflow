@@ -1,7 +1,11 @@
 package com.workflow.util;
 
-import java.awt.*;
+import lombok.extern.java.Log;
 
+import java.awt.*;
+import java.util.logging.Level;
+
+@Log
 public class RobotUtil {
     /**
      * 模拟按下键盘单个按键，比如文档下一页：PgDn，上一页是PgUp等
