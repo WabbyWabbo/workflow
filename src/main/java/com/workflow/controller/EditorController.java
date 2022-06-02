@@ -23,4 +23,14 @@ public class EditorController {
     public Result saveScript(@RequestBody HashMap<String, String> map){
         return editorService.saveContent(map);
     }
+
+    @PostMapping("/editor/capture")
+    public Result snipPicture(@RequestBody HashMap<String, String> map){
+        return editorService.capture(map);
+    }
+
+    @PostMapping("/editor/previewPic")
+    public Result previewPicture(@RequestBody HashMap<String, String> map){
+        return editorService.previewPicture(map);
+    }
 }

@@ -40,3 +40,6 @@ log/
 temp/
 cache/
 imageMatch.pyc
+/src/test/
+cache/
+imageMatch.pyc
