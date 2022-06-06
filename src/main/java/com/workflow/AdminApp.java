@@ -40,6 +40,20 @@ public class AdminApp {
             pic_temp.mkdir();
         }
 
+        // 临时脚本文件夹
+        File script_temp = new File("C:\\script_temp");
+        if (!script_temp.exists() && !script_temp.isDirectory()) {
+            script_temp.mkdir();
+        }
+        File temp = new File("C:\\script_temp\\temp.sikuli");
+        if (!temp.exists() && !temp.isDirectory()) {
+            temp.mkdir();
+        }
+        File script = new File("C:\\script_temp\\temp.sikuli\\temp.py");
+        if (!script.exists() && !script.isFile()) {
+            script.createNewFile();
+        }
+
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {

@@ -33,4 +33,21 @@ public class EditorController {
     public Result previewPicture(@RequestBody HashMap<String, String> map){
         return editorService.previewPicture(map);
     }
+
+    @PostMapping("/editor/createScript")
+    public Result createScript(@RequestBody HashMap<String, String> map){
+        return editorService.createScript(map);
+    }
+
+    @PostMapping("/editor/saveScriptToTemp")
+    public Result saveScriptToTemp(@RequestBody HashMap<String, String> map){
+        return editorService.saveScriptToTemp(map);
+    }
+
+    @PostMapping("/editor/newScript")
+    public Result newScript(){
+        return editorService.newScript();
+    }
+
+
 }

@@ -63,6 +63,10 @@
                     if (e.data.startsWith('[picName]')) {
                         editor.insert('"' + e.data.replace('[picName]', '') + '"')
                     }
+                    if (e.data.startsWith('[create]')) {
+                        editor.setReadOnly(false);
+                        editor.setValue('');
+                    }
 
             }
 

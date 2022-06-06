@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.FileSystemUtils;
 import vo.Result;
 
 import javax.imageio.ImageIO;
@@ -56,6 +57,7 @@ public class EditorServiceImpl implements EditorService {
     public Result saveContent(HashMap<String, String> map) {
         String scriptDir = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli\\" + map.get("scriptName") + ".py";
         String content = map.get("editorContent");
+
         boolean b = FileUtil.saveScript(scriptDir, content);
         if (b)
             return Result.success("ok");
@@ -99,7 +101,7 @@ public class EditorServiceImpl implements EditorService {
         }
 
         // 从剪贴板获取图片
-//        Thread.sleep(6000);
+        Thread.sleep(1000);
         Image imageFromClipboard = ClipboardOperate.getImageFromClipboard();
 
         if (imageFromClipboard == null) {
@@ -118,6 +120,9 @@ public class EditorServiceImpl implements EditorService {
         ImageIO.write((RenderedImage) imageFromClipboard, "png", newPicture);
         pictureNames.add(fileName);
 
+        // 返回浏览器
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
+
         return Result.success(fileName);
     }
 
@@ -133,5 +138,50 @@ public class EditorServiceImpl implements EditorService {
         } else {
             return Result.fail(404, "找不到该图片");
         }
+    }
+
+    @SneakyThrows
+    @Override
+    public Result createScript(HashMap<String, String> map) {
+        String path = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli";
+        // 新建.sikuli文件夹
+        File dir = new File(path);
+        if (!dir.exists() && !dir.isDirectory()) {
+            dir.mkdir();
+        } else {
+            return Result.fail(400, "保存失败，该脚本已存在！");
+        }
+        // 从temp.sikuli拷贝到该文件夹
+        File temp = new File("C:\\script_temp\\temp.sikuli");
+        FileSystemUtils.copyRecursively(temp, dir);
+        // 改名py文件
+        File tempPythonFile = new File(path + "\\" + "temp.py");
+        File realPythonFile = new File(path + "\\" + map.get("scriptName") + ".py");
+        tempPythonFile.renameTo(realPythonFile);
+
+        return Result.success("ok");
+    }
+
+    @SneakyThrows
+    @Override
+    public Result newScript() {
+        // 清空temp.sikuli目录
+        FileUtil.deleteDir("C:\\script_temp\\temp.sikuli");
+        // 重新生成.py文件
+        File script = new File("C:\\script_temp\\temp.sikuli\\temp.py");
+        script.createNewFile();
+
+        return Result.success("empty temp.sikuli folder: ok");
+    }
+
+    @Override
+    public Result saveScriptToTemp(HashMap<String, String> map) {
+        String content = map.get("editorContent");
+        // 写入temp.py中
+        boolean b = FileUtil.saveScript("C:\\script_temp\\temp.sikuli\\temp.py", content);
+        if (b)
+            return Result.success("ok");
+        else
+            return Result.fail(500, "写入temp.py失败");
     }
 }

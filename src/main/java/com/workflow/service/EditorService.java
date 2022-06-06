@@ -14,4 +14,10 @@ public interface EditorService {
     Result capture(HashMap<String, String> map);
 
     Result previewPicture(HashMap<String, String> map);
+
+    Result createScript(HashMap<String, String> map);
+
+    Result newScript();
+
+    Result saveScriptToTemp(HashMap<String, String> map);
 }
