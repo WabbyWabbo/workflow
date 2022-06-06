@@ -50,11 +50,8 @@
             });
 
             function receiveMessage(e) {
-                if (e.origin !== 'http://localhost:6630') {
-                    alert('来源错误');
-                    return false;
-                } else {
-                    // console.log(e.data);
+
+                    console.log(e.data);
                     if (e.data.startsWith('[view]')) {
                         editor.setReadOnly(true);
                         editor.setValue(e.data.replace("[view]", ""));
@@ -66,7 +63,7 @@
                     if (e.data.startsWith('[picName]')) {
                         editor.insert('"' + e.data.replace('[picName]', '') + '"')
                     }
-                }
+
             }
 
             window.addEventListener('message', receiveMessage, false);
