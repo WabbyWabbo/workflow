@@ -1,7 +1,5 @@
 package com.workflow.service;
 
-import com.workflow.model.params.PageParam;
-import com.workflow.pojo.Download;
 import vo.Result;
 
 import java.util.HashMap;
@@ -15,9 +13,9 @@ public interface EditorService {
 
     Result previewPicture(HashMap<String, String> map);
 
-    Result createScript(HashMap<String, String> map);
+    Result createRealScript(HashMap<String, String> map);
 
-    Result newScript();
+    Result createTempScript();
 
     Result saveScriptToTemp(HashMap<String, String> map);
 }

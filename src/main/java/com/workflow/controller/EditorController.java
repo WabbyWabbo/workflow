@@ -36,7 +36,7 @@ public class EditorController {
 
     @PostMapping("/editor/createScript")
     public Result createScript(@RequestBody HashMap<String, String> map){
-        return editorService.createScript(map);
+        return editorService.createRealScript(map);
     }
 
     @PostMapping("/editor/saveScriptToTemp")
@@ -46,7 +46,7 @@ public class EditorController {
 
     @PostMapping("/editor/newScript")
     public Result newScript(){
-        return editorService.newScript();
+        return editorService.createTempScript();
     }
 
 

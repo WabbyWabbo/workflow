@@ -140,15 +140,23 @@
                              label-width="100px">
                         <el-row>
                             <el-col>
-                                <el-form-item label="名称" prop="name">
-                                    <el-input v-model="editingName"/>
+                                <el-form-item label="脚本名称" prop="name">
+                                    <el-input v-model="editingName" style="width: 680px"/>
                                 </el-form-item>
                             </el-col>
                         </el-row>
                         <el-row>
                             <el-col>
-                                <el-form-item label="路径" prop="path">
-                                    <el-input v-model="scriptsPath"/>
+                                <el-form-item label="保存路径" prop="path">
+<!--                                    <el-input v-model="scriptsPath"/>-->
+                                    <el-select v-model="scriptsPathSelectedIndex" filterable placeholder="请选择脚本目录" style="width: 680px">
+                                        <el-option
+                                                v-for="item in scriptsDirs"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                        </el-option>
+                                    </el-select>
                                 </el-form-item>
                             </el-col>
                         </el-row>
@@ -263,19 +271,30 @@
             showDialog() {
                 this.dialogFormVisible = true;
             },
+
+            // 对话框的确定按钮
             handleOKButton() {
+                // 设置为当前选中的条目，不然默认的是在C盘的temp里
+                this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
+                // console.log("scriptPath before ok button sent post:" + this.scriptsPath);
                 // 请求创建该脚本的文件夹，并复制过去
                 axios.post("/editor/createScript", {
                     scriptsPath: this.scriptsPath,
                     scriptName: this.editingName,
                 }).then((res) => {
-                    console.log(res.data.data);
-                    this.dialogFormVisible = false;
-                    this.isNew = false;
-                    if (res.data.code != 200)
+                    // console.log(res.data.data);
+                    if (res.data.code != 200){
                         window.alert(res.data.message);
+                        return;
+                    }else{
+                        this.dialogFormVisible = false;
+                        this.isNew = false;
+                        // 更新一下当前的脚本列表，该目录可能已经新增脚本了
+                        this.getScripts();
+                    }
                 });
             },
+            // 截图按钮
             handleCapture() {
                 let iframe = document.getElementById('iframe').contentWindow;
                 axios.post("/editor/capture", {
@@ -291,6 +310,8 @@
                     }
                 });
             },
+
+            // 预览按钮
             handlePreview() {
                 axios.post("/editor/previewPic", {
                     selectedText: localStorage.getItem("selectedText")
@@ -302,6 +323,7 @@
                     }
                 });
             },
+            // 新建按钮
             handleCreate(){
                 this.isNew = true;
                 this.isSelected = true;

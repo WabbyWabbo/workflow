@@ -66,7 +66,6 @@ public class MouseLLHook {
                         EditorServiceImpl.captureFinished = false;
                         break;
                     case WM_LBUTTONUP:
-
                         log.debug("mouse left button up" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
                         EditorServiceImpl.captureFinished = true;
                         break;

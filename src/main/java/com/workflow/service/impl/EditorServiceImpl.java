@@ -171,7 +171,7 @@ public class EditorServiceImpl implements EditorService {
 
     @SneakyThrows
     @Override
-    public Result createScript(HashMap<String, String> map) {
+    public Result createRealScript(HashMap<String, String> map) {
         String path = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli";
         // 新建.sikuli文件夹
         File dir = new File(path);
@@ -193,7 +193,7 @@ public class EditorServiceImpl implements EditorService {
 
     @SneakyThrows
     @Override
-    public Result newScript() {
+    public Result createTempScript() {
         // 清空temp.sikuli目录
         FileUtil.deleteDir("C:\\script_temp\\temp.sikuli");
         // 重新生成.py文件
