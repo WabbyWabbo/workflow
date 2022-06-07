@@ -105,7 +105,7 @@
                   slot-scope="{ option }"
                   :draggable="!option.disabled"
                   @dragstart="drag($event, option)"
-                  @dblclick="showAllInfo"
+                  @dblclick="showAllInfo(option)"
           >{{ option.key }} -- {{ option.label }}</span
           >
                     <!-- 为了与右侧同高 -->
@@ -151,7 +151,14 @@
                         :visible.sync="drawer"
                         :direction="direction"
                         :before-close="handleClose">
-                    <span>我来啦!</span>
+                    <el-input
+                            type="textarea"
+                            autosize
+                            placeholder="日志展示区"
+                            show-word-limit="true"
+                            readonly="true"
+                            v-model="allInfo">
+                    </el-input>
                 </el-drawer>
             </div>
         </div>
@@ -196,6 +203,8 @@
                     title: '脚本名称样例',
                     drawer: false,
                     direction: 'rtl',
+                    allInfo: '',
+                    allInfoArray: [],
                     scriptsDirs: [{
                         value: '选项1',
                         label: '样例'
@@ -224,8 +233,18 @@
                 },
 
                 // 双击脚本名，打开抽屉
-                showAllInfo() {
+                showAllInfo(option) {
+                    this.title = option.key + '--' + option.label;
+                    this.allInfo = this.getAllInfoByName(option.label);
                     this.drawer = true;
+                },
+
+                getAllInfoByName(name) {
+                    for (let i = 0; i < this.allInfoArray.length; i++) {
+                        if (this.allInfoArray[i].scriptName == name) {
+                            return this.allInfoArray[i].allInfo;
+                        }
+                    }
                 },
 
                 setSikuli() {
@@ -324,6 +343,7 @@
                                     that.download_disable = false;
                                     that.loadingbuttext = "运行";
                                     that.stop_btn_diabled = true;
+                                    that.allInfoArray = response.data.data;
                                 }
                             },
                             function (err) {
