@@ -39,24 +39,71 @@ public class GUITestController {
     List<String> scriptsName = new ArrayList<>();
     List<Result> results = new ArrayList<>();
 
+    @SneakyThrows
     @PostMapping("/setSikuliPath")
     public RestBean<Void> setSikuliPath(@RequestBody HashMap<String, String> map) {
 
-        if (map.containsKey("sikuliPath"))
-            this.sikuliPath = map.get("sikuliPath");
-        log.info("sikuliPath: " + sikuliPath);
+        this.sikuliPath = map.get("sikuliPath");
 
+        String recent = map.get("recent");
+        if (recent != null){
+            // 存入data.json
+            All all = FastJsonUtils.readFile("data.json");
+            all.getSikuli().setRecent(Long.valueOf(recent));
+            String modifiedString = FastJsonUtils.toJSONString(all);
+            FastJsonUtils.writeFile("data.json", modifiedString);
+        }
+        log.info("sikuliPath: " + sikuliPath);
+        log.info(recent);
         return new RestBean<>(200, "set sikuliPath success");
     }
 
+    @SneakyThrows
+    @PostMapping("/setDownloadPath")
+    public RestBean<Void> setDownloadPath(@RequestBody HashMap<String, String> map) {
+
+        this.downloadPath = map.get("downloadPath");
+
+        String recent = map.get("recent");
+        if (recent != null){
+            // 存入data.json
+            All all = FastJsonUtils.readFile("data.json");
+            all.getDownload().setRecent(Long.valueOf(recent));
+            String modifiedString = FastJsonUtils.toJSONString(all);
+            FastJsonUtils.writeFile("data.json", modifiedString);
+        }
+        log.info("downloadPath: " + downloadPath);
+        log.info(recent);
+        return new RestBean<>(200, "set downloadPath success");
+    }
+
+    @SneakyThrows
+    @PostMapping("/setFailedHandlerPath")
+    public RestBean<Void> setfailedHandlerPath(@RequestBody HashMap<String, String> map) {
+
+        this.failedHandlerPath = map.get("failedHandlerPath");
+
+        String recent = map.get("recent");
+        if (recent != null){
+            // 存入data.json
+            All all = FastJsonUtils.readFile("data.json");
+            all.getFailedHandler().setRecent(Long.valueOf(recent));
+            String modifiedString = FastJsonUtils.toJSONString(all);
+            FastJsonUtils.writeFile("data.json", modifiedString);
+        }
+        log.info("failedHandlerPath: " + failedHandlerPath);
+        log.info(recent);
+        return new RestBean<>(200, "set failedHandlerPath success");
+    }
 
     @SneakyThrows
     @PostMapping("/setScriptsPath")
     public RestBean<List<String>> setScriptsPath(@RequestBody HashMap<String, String> map) {
 
         this.scriptsPath = map.get("scriptsPath");
+
         String recent = map.get("recent");
-        if (recent != null){
+        if (recent != null) {
             // 存入data.json
             All all = FastJsonUtils.readFile("data.json");
             all.getScript().setRecent(Long.valueOf(recent));
@@ -115,7 +162,7 @@ public class GUITestController {
         }
 
         // 最小化浏览器界面
-        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT,KeyEvent.VK_SPACE,KeyEvent.VK_N);
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_SPACE, KeyEvent.VK_N);
 
 
         // 创建专属于本次运行的文件夹
@@ -222,7 +269,7 @@ public class GUITestController {
         needStop = true;
 
         // 按 Alt + Shift + c 立即结束正在运行的Sikuli脚本
-        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT,KeyEvent.VK_SHIFT,KeyEvent.VK_C);
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_SHIFT, KeyEvent.VK_C);
 
         return new RestBean(200, "成功停止");
     }

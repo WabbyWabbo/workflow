@@ -111,6 +111,8 @@ public class DownloadServiceImpl implements DownloadService {
                 downloadDirs.add(temp);
             }
         }
-        return Result.success(downloadDirs);
+        Long recent = all.getDownload().getRecent();
+        Object[] res = new Object[]{recent,downloadDirs};
+        return Result.success(res);
     }
 }

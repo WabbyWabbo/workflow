@@ -56,10 +56,10 @@
     <div class="app-container">
         <div class="box">
             <div class="filter-container">
-                <el-select v-model="sikuliPath" @change="setSikuli" filterable placeholder="请选择sikuli位置">
+                <el-select v-model="sikuliPathSelectedIndex" @change="setSikuli" filterable placeholder="请选择sikuli位置">
                     <el-option
                             v-for="item in sikuliDirs"
-                            :key="item.label"
+                            :key="item.value"
                             :label="item.label"
                             :value="item.value">
                     </el-option>
@@ -72,18 +72,18 @@
                             :value="item.value">
                     </el-option>
                 </el-select>
-                <el-select v-model="downloadPath" filterable placeholder="请选择下载目录">
+                <el-select v-model="downloadPathSelectedIndex" @change="setDownload" filterable placeholder="请选择下载目录">
                     <el-option
                             v-for="item in downloadDirs"
-                            :key="item.label"
+                            :key="item.value"
                             :label="item.label"
                             :value="item.value">
                     </el-option>
                 </el-select>
-                <el-select v-model="failedHandlerPath" filterable placeholder="请选择失败处理脚本">
+                <el-select v-model="failedHandlerPathSelectedIndex" @change="setFailedHandler" filterable placeholder="请选择失败处理脚本">
                     <el-option
                             v-for="item in failedHandlerDirs"
-                            :key="item.label"
+                            :key="item.value"
                             :label="item.label"
                             :value="item.value">
                     </el-option>
@@ -164,8 +164,14 @@
             data() {
                 return {
                     scriptsPath: "",
-                    recent: 0,
+                    scriptPathRecent: 0,
+                    sikuliPathRecent: 0,
+                    downloadPathRecent: 0,
+                    failedHandlerPathRecent: 0,
                     scriptsPathSelectedIndex: 0,
+                    sikuliPathSelectedIndex: 0,
+                    downloadPathSelectedIndex: 0,
+                    failedHandlerPathSelectedIndex: 0,
                     sikuliPath: "",
                     downloadPath: "",
                     failedHandlerPath:"",
@@ -202,20 +208,44 @@
                 drag(ev, option) {
                     this.draggingKey = option.key;
                 },
+
                 setSikuli() {
+                    this.sikuliPathRecent = this.sikuliPathSelectedIndex;
+                    console.log(this.sikuliPathRecent)
                     axios.post("/setSikuliPath", {
                         sikuliPath: this.sikuliPath,
+                        recent: this.sikuliPathRecent
                     });
                 },
+
+                setDownload() {
+                    this.downloadPathRecent = this.downloadPathSelectedIndex;
+                    console.log(this.downloadPathRecent)
+                    axios.post("/setDownloadPath", {
+                        downloadPath: this.downloadPath,
+                        recent: this.downloadPathRecent
+                    });
+                },
+
+
+                setFailedHandler() {
+                    this.failedHandlerPathRecent = this.failedHandlerPathSelectedIndex;
+                    console.log(this.failedHandlerPathRecent)
+                    axios.post("/setFailedHandlerPath", {
+                        failedHandlerPath: this.failedHandlerPath,
+                        recent: this.failedHandlerPathRecent
+                    });
+                },
+
                 getScripts() {
                     this.data = [];
                     this.selected = []; // 重新输入脚本目录后，都要清空
                     this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
-                    this.recent = this.scriptsPathSelectedIndex;
+                    this.scriptPathRecent = this.scriptsPathSelectedIndex;
                     let that = this;
                     axios.post("/setScriptsPath", {
                         scriptsPath: this.scriptsPath,
-                        recent: this.recent
+                        recent: this.scriptPathRecent
                     }).then((res) => {
                         let scripts_arr = res.data.data;
                         for (let i = 0; i < scripts_arr.length; i++) {
@@ -275,8 +305,6 @@
                 },
 
                 download() {
-                    // let url = ""
-                    // window.open(url)
                     let that = this;
                     axios
                         .post("/download", {
@@ -315,31 +343,34 @@
                 axios.get("/getSikuliDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
-                        this.sikuliDirs = res.data.data;
+                        this.sikuliPathRecent = res.data.data[0];
+                        this.sikuliPathSelectedIndex = this.sikuliPathRecent;
+                        this.sikuliDirs = res.data.data[1];
                     }
-                    // 默认加载第一条记录
+                    // 默认加载recent对应记录
                     if (this.sikuliDirs != null)
-                        this.sikuliPath = this.sikuliDirs[0].label;
+                        this.sikuliPath = this.sikuliDirs[this.sikuliPathRecent].label;
                 }).catch((error) => {
                     console.log(error);
                 });
+
 
                 // 加载页面时获取脚本目录位置
                 axios.get("/getScriptsDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
-                        this.recent = res.data.data[0];
-                        this.scriptsPathSelectedIndex = this.recent;
+                        this.scriptPathRecent = res.data.data[0];
+                        this.scriptsPathSelectedIndex = this.scriptPathRecent;
                         this.scriptsDirs = res.data.data[1];
                     }
-                    // 默认加载recent对应的目录
-                    this.scriptsPath = this.scriptsDirs[this.recent].label;
+                    // 默认加载scriptPathRecent对应的目录
+                    this.scriptsPath = this.scriptsDirs[this.scriptPathRecent].label;
                     this.data = [];
                     this.selected = []; // 重新输入脚本目录后，都要清空
                     let that = this;
                     axios.post("/setScriptsPath", {
                         scriptsPath: this.scriptsPath,
-                        recent: this.recent
+                        recent: this.scriptPathRecent
                     }).then((res) => {
                         let scripts_arr = res.data.data;
                         for (let i = 0; i < scripts_arr.length; i++) {
@@ -360,25 +391,32 @@
                 axios.get("/getDownloadDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
-                        this.downloadDirs = res.data.data;
+                        this.downloadPathRecent = res.data.data[0];
+                        this.downloadPathSelectedIndex = this.downloadPathRecent;
+                        this.downloadDirs = res.data.data[1];
                     }
-                    if (this.downloadDirs != null){
-                        this.downloadPath = this.downloadDirs[0].label;
-                    }
+                    // 默认加载recent对应记录
+                    if (this.downloadDirs != null)
+                        this.downloadPath = this.downloadDirs[this.downloadPathRecent].label;
                 }).catch((error) => {
                     console.log(error);
                 });
 
+
                 axios.get("/getFailedHandlerDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
-                        this.failedHandlerDirs = res.data.data;
+                        this.failedHandlerPathRecent = res.data.data[0];
+                        this.failedHandlerPathSelectedIndex = this.failedHandlerPathRecent;
+                        this.failedHandlerDirs = res.data.data[1];
                     }
+                    // 默认加载recent对应记录
                     if (this.failedHandlerDirs != null)
-                        this.failedHandlerPath = this.failedHandlerDirs[0].label;
+                        this.failedHandlerPath = this.failedHandlerDirs[this.failedHandlerPathRecent].label;
                 }).catch((error) => {
                     console.log(error);
                 });
+
 
                 // 拖拽排序工作
                 const transfer = this.$refs.transfer.$el;

@@ -110,6 +110,8 @@ public class SikuliServiceImpl implements SikuliService {
                 sikuliDirs.add(temp);
             }
         }
-        return Result.success(sikuliDirs);
+        Long recent = all.getSikuli().getRecent();
+        Object[] res = new Object[]{recent,sikuliDirs};
+        return Result.success(res);
     }
 }

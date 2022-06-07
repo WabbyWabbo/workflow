@@ -111,6 +111,8 @@ public class FailedHandlerServiceImpl implements FailedHandlerService {
                 failedHandlerDirs.add(temp);
             }
         }
-        return Result.success(failedHandlerDirs);
+        Long recent = all.getFailedHandler().getRecent();
+        Object[] res = new Object[]{recent,failedHandlerDirs};
+        return Result.success(res);
     }
 }

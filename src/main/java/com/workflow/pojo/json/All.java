@@ -5,6 +5,9 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 对应于整个data.json文件
+ */
 @Data
 public class All {
 
