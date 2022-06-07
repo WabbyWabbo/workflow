@@ -1,9 +1,5 @@
 package com.workflow.service.impl;
 
-import com.github.kwhat.jnativehook.GlobalScreen;
-import com.github.kwhat.jnativehook.NativeHookException;
-import com.github.kwhat.jnativehook.mouse.NativeMouseEvent;
-import com.github.kwhat.jnativehook.mouse.NativeMouseInputListener;
 import com.workflow.service.EditorService;
 import com.workflow.util.*;
 import lombok.SneakyThrows;
