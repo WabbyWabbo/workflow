@@ -9,7 +9,7 @@
     <meta name="keywords" content="测试管理系统">
     <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
     <!-- 引入样式 -->
-    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/element-ui/index.css">
     <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/style.css">
 
@@ -92,7 +92,7 @@
                 </el-select>
             </div>
 
-            <div style="margin-top:50px;">
+            <div style="margin-top:50px;display: inline-flex">
                 <el-transfer
                         filterable
                         :titles="['所有脚本', '待测脚本']"
@@ -105,6 +105,7 @@
                   slot-scope="{ option }"
                   :draggable="!option.disabled"
                   @dragstart="drag($event, option)"
+                  @dblclick="showAllInfo"
           >{{ option.key }} -- {{ option.label }}</span
           >
                     <!-- 为了与右侧同高 -->
@@ -144,6 +145,14 @@
                     </el-button
                     >
                 </el-transfer>
+
+                <el-drawer
+                        :title="title"
+                        :visible.sync="drawer"
+                        :direction="direction"
+                        :before-close="handleClose">
+                    <span>我来啦!</span>
+                </el-drawer>
             </div>
         </div>
     </div>
@@ -152,7 +161,7 @@
 </body>
 <!-- 引入组件库 -->
 <script src="../js/vue.js"></script>
-<script src="../plugins/elementui/index.js"></script>
+<script src="../plugins/element-ui/index.js"></script>
 <script src="../plugins/sortable/Sortable.min.js"></script>
 <script type="text/javascript" src="../js/jquery.min.js"></script>
 <script src="../js/axios-0.18.0.js"></script>
@@ -184,6 +193,9 @@
                     data: [],
                     selected: [],
                     draggingKey: null,
+                    title: '脚本名称样例',
+                    drawer: false,
+                    direction: 'rtl',
                     scriptsDirs: [{
                         value: '选项1',
                         label: '样例'
@@ -209,6 +221,11 @@
             methods: {
                 drag(ev, option) {
                     this.draggingKey = option.key;
+                },
+
+                // 双击脚本名，打开抽屉
+                showAllInfo() {
+                    this.drawer = true;
                 },
 
                 setSikuli() {
@@ -353,6 +370,14 @@
                             });
                         }
                     });
+                },
+                // 抽屉的关闭
+                handleClose(done) {
+                    // this.$confirm('确认关闭？')
+                    //   .then(_ => {
+                    done();
+                    // })
+                    // .catch(_ => {});
                 },
             },
             created() {
