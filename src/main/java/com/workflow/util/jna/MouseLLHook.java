@@ -27,6 +27,8 @@ public class MouseLLHook {
     public static final int WM_MOUSEHWHEEL = 526;
     public static final int WM_MOUSEWHEEL = 522;
     public static final int WM_MOUSEMOVE = 512;
+    public static double x;
+    public static double y;
 
     static HHOOK mouseHHK, keyboardHHK;  // 鼠标、键盘钩子的句柄
     static LowLevelMouseProc mouseHook;              // 鼠标钩子函数
@@ -58,8 +60,9 @@ public class MouseLLHook {
                                     MOUSEHOOKSTRUCT lParam) {
                 switch (wParam.intValue()) {
                     case WM_LBUTTONDOWN:
-
                         log.debug("mouse left button down:" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
+                        x = lParam.pt.x;
+                        y = lParam.pt.y;
                         EditorServiceImpl.captureFinished = false;
                         break;
                     case WM_LBUTTONUP:

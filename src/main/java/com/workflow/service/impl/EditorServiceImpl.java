@@ -2,17 +2,20 @@ package com.workflow.service.impl;
 
 import com.workflow.service.EditorService;
 import com.workflow.util.*;
+import com.workflow.util.jna.MouseLLHook;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import vo.Result;
+import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.RenderedImage;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -95,7 +98,7 @@ public class EditorServiceImpl implements EditorService {
         }
 
         // 从剪贴板获取图片
-//        Thread.sleep(6000);
+        Thread.sleep(500);
         Image imageFromClipboard = ClipboardOperate.getImageFromClipboard();
 
         if (imageFromClipboard == null) {
@@ -113,6 +116,43 @@ public class EditorServiceImpl implements EditorService {
         File newPicture = new File(mImagesPath + "\\" + fileName);
         ImageIO.write((RenderedImage) imageFromClipboard, "png", newPicture);
         pictureNames.add(fileName);
+
+        // 截图的同时保存json文件
+        String jsonFileName = fileName.replace(".png", ".json");
+        File jsonFile = new File(scriptDir + jsonFileName);
+        if (!jsonFile.exists()) {
+            jsonFile.createNewFile();
+        }
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenX = (int) screenSize.getWidth();
+        int screenY = (int) screenSize.getHeight();
+        double per_x = MouseLLHook.x / (screenX * 1.00);
+        double per_y = MouseLLHook.y / (screenY * 1.00);
+
+        String jsonStr = FileUtils.readFileToString(jsonFile, "UTF-8");
+        JSONObject contain;
+        if (!jsonStr.isEmpty()) {
+            contain = new JSONObject(jsonStr);
+        } else
+            contain = new JSONObject();
+        JSONObject js = new JSONObject();
+        js.put("perpos_x", per_x);
+        js.put("perpos_y", per_y);
+        js.put("screen_x", screenX);
+        js.put("screen_y", screenY);
+        contain.put(fileName, js);
+        String content = contain.toString();
+        FileOutputStream fileOutputStream = new FileOutputStream(jsonFile);//实例化FileOutputStream
+        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, "utf-8");//将字符流转换为字节流
+        BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);//创建字符缓冲输出流对象
+        bufferedWriter.write(content);//将格式化的jsonarray字符串写入文件
+        bufferedWriter.flush();//清空缓冲区，强制输出数据
+        bufferedWriter.close();//关闭输出流
+
+        // 返回浏览器
+        Thread.sleep(500);
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
 
         return Result.success(fileName);
     }
