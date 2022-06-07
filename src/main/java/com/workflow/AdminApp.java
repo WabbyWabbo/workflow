@@ -19,11 +19,11 @@ public class AdminApp {
 
     @SneakyThrows
     public static void main(String[] args) {
-        SpringApplication.run(AdminApp.class,args);
+        SpringApplication.run(AdminApp.class, args);
         // 运行前检查用户的data.json是否存在
         File file = new File("data.json");
         if (!file.exists()) {
-            FastJsonUtils.writeFile("data.json","{\"download\":{\"list\":[],\"total\":0},\"script\":{\"list\":[],\"total\":0},\"sikuli\":{\"list\":[],\"total\":0},\"failedHandler\":{\"list\":[],\"total\":0}}");
+            FastJsonUtils.writeFile("data.json", "{\"download\":{\"list\":[],\"total\":0},\"script\":{\"list\":[],\"total\":0},\"sikuli\":{\"list\":[],\"total\":0},\"failedHandler\":{\"list\":[],\"total\":0}}");
         }
         // 如果cache文件夹不存在则创建
         File cache = new File("cache");
@@ -39,6 +39,20 @@ public class AdminApp {
         File pic_temp = new File("C:\\pic_temp");
         if (!pic_temp.exists() && !pic_temp.isDirectory()) {
             pic_temp.mkdir();
+        }
+
+        // 临时脚本文件夹
+        File script_temp = new File("C:\\script_temp");
+        if (!script_temp.exists() && !script_temp.isDirectory()) {
+            script_temp.mkdir();
+        }
+        File temp = new File("C:\\script_temp\\temp.sikuli");
+        if (!temp.exists() && !temp.isDirectory()) {
+            temp.mkdir();
+        }
+        File script = new File("C:\\script_temp\\temp.sikuli\\temp.py");
+        if (!script.exists() && !script.isFile()) {
+            script.createNewFile();
         }
 
 //        // 打包成jar会遇到 URI is not hierarchical 的问题，原因未知

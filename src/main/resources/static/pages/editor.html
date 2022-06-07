@@ -79,6 +79,8 @@
                     </el-option>
                 </el-select>
 
+
+                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
                 <el-button type="primary" @click="handleEdit()" :disabled="!isSelected" style="display: inline">编辑
                 </el-button>
                 <el-button type="primary" @click="handleSave()" :disabled="!isSelected" style="display: inline">保存
@@ -131,6 +133,32 @@
                     </el-col>
                 </el-row>
             </div>
+            // 弹出层
+            <div class="add-form">
+                <el-dialog title="保存" :visible.sync="dialogFormVisible">
+                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px">
+                        <el-row>
+                            <el-col>
+                                <el-form-item label="名称" prop="name">
+                                    <el-input v-model="editingName"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col>
+                                <el-form-item label="路径" prop="path">
+                                    <el-input v-model="scriptsPath"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogFormVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleOKButton()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
         </div>
     </div>
 </div>
@@ -158,6 +186,13 @@
                 editingName: '',
                 isSelected: false,
                 isEditing: false,
+                isNew: false,
+                formData: {},
+                dialogFormVisible: false, //表单是否可见
+                rules: {//校验规则
+                    name: [{required: true, message: '必填项', trigger: 'blur'}],
+                    path: [{required: true, message: '必填项', trigger: 'blur'}],
+                },
                 url: 'http://localhost:6630/img/default.png'
             };
         },
@@ -203,13 +238,38 @@
                 iframe.postMessage("[edit]" + localStorage.getItem("original"), '*');
             },
             handleSave() {
-                axios.post("/editor/saveScript", {
+                if (this.isNew) {
+                    this.showDialog();
+                    axios.post("/editor/saveScriptToTemp", {
+                        editorContent: localStorage.getItem("content")
+                    }).then((res) => {
+                        console.log(res.data.data);
+                    })
+                } else {
+                    axios.post("/editor/saveScript", {
+                        scriptsPath: this.scriptsPath,
+                        scriptName: this.editingName,
+                        editorContent: localStorage.getItem("content")
+                    }).then((res) => {
+                        console.log(res.data.data);
+                    })
+                }
+            },
+            showDialog() {
+                this.dialogFormVisible = true;
+            },
+            handleOKButton() {
+                // 请求创建该脚本的文件夹，并复制过去
+                axios.post("/editor/createScript", {
                     scriptsPath: this.scriptsPath,
                     scriptName: this.editingName,
-                    editorContent: localStorage.getItem("content")
                 }).then((res) => {
                     console.log(res.data.data);
-                })
+                    this.dialogFormVisible = false;
+                    this.isNew = false;
+                    if (res.data.code != 200)
+                        window.alert(res.data.message);
+                });
             },
             handleCapture() {
                 let iframe = document.getElementById('iframe').contentWindow;
@@ -236,7 +296,24 @@
                         this.url = 'http://localhost:6630/img/default.png';
                     }
                 });
-            }
+            },
+            handleCreate(){
+                this.isNew = true;
+                this.isSelected = true;
+                this.isEditing = true;
+                this.scriptsPath = 'C:\\script_temp';
+                this.editingName = 'temp';
+                let iframe = document.getElementById('iframe').contentWindow;
+                iframe.postMessage("[create]", '*');
+                // 请求清空temp目录
+                axios.post("/editor/newScript").then((res) => {
+                    if (res.data.code == 200) {
+
+                    }else{
+                        window.alert(res.data.message);
+                    }
+                });
+            },
         },
         created() {
         }
