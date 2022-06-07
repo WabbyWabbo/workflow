@@ -51,7 +51,7 @@
 
             function receiveMessage(e) {
 
-                    console.log(e.data);
+                    // console.log(e.data);
                     if (e.data.startsWith('[view]')) {
                         editor.setReadOnly(true);
                         editor.setValue(e.data.replace("[view]", ""));

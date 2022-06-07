@@ -101,10 +101,20 @@ public class EditorServiceImpl implements EditorService {
 
         // 从剪贴板获取图片
         Thread.sleep(500);
-        Image imageFromClipboard = ClipboardOperate.getImageFromClipboard();
+        Image imageFromClipboard = null;
+        try {
+            // java.lang.IllegalStateException: cannot open system clipboard
+            imageFromClipboard = ClipboardOperate.getImageFromClipboard();
+        } catch (Exception e) {
+            // 返回浏览器
+            RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
+            return Result.fail(500, e.getMessage());
+        }
 
         if (imageFromClipboard == null) {
             log.warning("剪贴板中没有截图");
+            // 返回浏览器
+            RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
             return Result.fail(500, "截图失败");
         }
 

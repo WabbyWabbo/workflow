@@ -25,16 +25,17 @@
     <!--        <script src="../plugins/quill/quill.core.js"></script>-->
 
 
-
     <style>
-        .el-transfer-panel{
+        .el-transfer-panel {
             height: 650px;
             width: 400px;
         }
-        .el-transfer-panel__body{
+
+        .el-transfer-panel__body {
             height: 500px;
             width: 400px;
         }
+
         .el-transfer-panel__list.is-filterable {
             height: 500px;
             width: 400px;
@@ -80,7 +81,8 @@
                             :value="item.value">
                     </el-option>
                 </el-select>
-                <el-select v-model="failedHandlerPathSelectedIndex" @change="setFailedHandler" filterable placeholder="请选择失败处理脚本">
+                <el-select v-model="failedHandlerPathSelectedIndex" @change="setFailedHandler" filterable
+                           placeholder="请选择失败处理脚本">
                     <el-option
                             v-for="item in failedHandlerDirs"
                             :key="item.value"
@@ -143,9 +145,9 @@
                     >
                 </el-transfer>
             </div>
-            </div>
         </div>
     </div>
+</div>
 </div>
 </body>
 <!-- 引入组件库 -->
@@ -174,7 +176,7 @@
                     failedHandlerPathSelectedIndex: 0,
                     sikuliPath: "",
                     downloadPath: "",
-                    failedHandlerPath:"",
+                    failedHandlerPath: "",
                     loadingbut: false,
                     loadingbuttext: "运行",
                     download_disable: true,
@@ -211,7 +213,8 @@
 
                 setSikuli() {
                     this.sikuliPathRecent = this.sikuliPathSelectedIndex;
-                    console.log(this.sikuliPathRecent)
+                    this.sikuliPath = this.sikuliDirs[this.sikuliPathSelectedIndex].label;
+                    // console.log(this.sikuliPathRecent)
                     axios.post("/setSikuliPath", {
                         sikuliPath: this.sikuliPath,
                         recent: this.sikuliPathRecent
@@ -220,7 +223,8 @@
 
                 setDownload() {
                     this.downloadPathRecent = this.downloadPathSelectedIndex;
-                    console.log(this.downloadPathRecent)
+                    this.downloadPath = this.downloadDirs[this.downloadPathSelectedIndex].label;
+                    // console.log(this.downloadPathRecent)
                     axios.post("/setDownloadPath", {
                         downloadPath: this.downloadPath,
                         recent: this.downloadPathRecent
@@ -230,7 +234,8 @@
 
                 setFailedHandler() {
                     this.failedHandlerPathRecent = this.failedHandlerPathSelectedIndex;
-                    console.log(this.failedHandlerPathRecent)
+                    this.failedHandlerPath = this.failedHandlerDirs[this.failedHandlerPathSelectedIndex].label;
+                    // console.log(this.failedHandlerPathRecent)
                     axios.post("/setFailedHandlerPath", {
                         failedHandlerPath: this.failedHandlerPath,
                         recent: this.failedHandlerPathRecent
@@ -240,6 +245,7 @@
                 getScripts() {
                     this.data = [];
                     this.selected = []; // 重新输入脚本目录后，都要清空
+                    // post 之前，都要重新获取Path
                     this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
                     this.scriptPathRecent = this.scriptsPathSelectedIndex;
                     let that = this;
@@ -265,7 +271,9 @@
                     this.download_disable = true;
 
                     if (this.selected.length == 0) {
-                        window.alert("未选中任何脚本!");
+                        this.$notify.error({
+                            title: '未选中任何脚本'
+                        });
                         that.loadingbut = false;
                         that.download_disable = true;
                         that.loadingbuttext = "运行";
@@ -281,12 +289,15 @@
                             selected: this.selected,
                             scriptsPath: this.scriptsPath,
                             sikuliPath: this.sikuliPath,
-                            failedHandlerPath:this.failedHandlerPath,
+                            failedHandlerPath: this.failedHandlerPath,
                         })
                         .then(
                             function (response) {
                                 if (response.data.code == 500) {
-                                    window.alert(response.data.reason);
+                                    that.$notify.error({
+                                        title: '运行出错',
+                                        message: response.data.message
+                                    });
                                     that.loadingbut = false;
                                     that.download_disable = true;
                                     that.loadingbuttext = "运行";
@@ -310,12 +321,18 @@
                         .post("/download", {
                             downloadPath: this.downloadPath,
                         })
-                        .then(function (response) {
+                        .then((response) => {
                             if (response.data.code == 200) {
-                                window.alert("下载至" + that.downloadPath);
+                                that.$notify.success({
+                                    title: '下载成功',
+                                    message: '下载至' + that.downloadPath,
+                                });
                             }
                             if (response.data.code == 500) {
-                                window.alert(response.data.reason);
+                                that.$notify.error({
+                                    title: '下载出错',
+                                    message: response.data.message
+                                });
                             }
                         });
                 },
@@ -323,14 +340,17 @@
                 stop() {
                     this.stop_btn_diabled = true;
                     let that = this;
-                    axios.post("/stop").then(function (response) {
+                    axios.post("/stop").then((response) => {
                         if (response.data.code == 200) {
                             that.loadingbut = false;
                             that.download_disable = false;
                             that.loadingbuttext = "运行";
                         }
                         if (response.data.code == 500) {
-                            window.alert(response.data.reason);
+                            that.$notify.error({
+                                title: '停止出错',
+                                message: response.data.message
+                            });
                         }
                     });
                 },
@@ -385,7 +405,6 @@
                 }).catch((error) => {
                     console.log(error);
                 });
-
 
 
                 axios.get("/getDownloadDirs").then((res) => {

@@ -97,6 +97,8 @@
                         <div class="grid-content bg-purple">
                             <el-table
                                     :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+                                    ref="singleTable"
+                                    highlight-current-row
                                     height="693px"
                                     style="width: 100%">
                                 <el-table-column
@@ -149,7 +151,11 @@
                             <el-col>
                                 <el-form-item label="保存路径" prop="path">
 <!--                                    <el-input v-model="scriptsPath"/>-->
-                                    <el-select v-model="scriptsPathSelectedIndex" filterable placeholder="请选择脚本目录" style="width: 680px">
+                                    <el-select
+                                            v-model="scriptsPathSelectedIndex"
+                                            filterable
+                                            placeholder="请选择脚本目录"
+                                            style="width: 680px">
                                         <el-option
                                                 v-for="item in scriptsDirs"
                                                 :key="item.value"
@@ -230,11 +236,15 @@
                 });
             },
             handleView(row) {
+                this.$refs.singleTable.setCurrentRow(row);  // 高亮选中的行
                 this.code = '';
                 this.editingName = row.name;
                 this.isSelected = true;
                 this.isEditing = false;
                 let iframe = document.getElementById('iframe').contentWindow;
+                // 在新建态下，点击查看按钮，应该恢复scriptsPath和isNew状态
+                this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
+                this.isNew =false;
                 axios.post("/editor/editScript", {
                     scriptsPath: this.scriptsPath,
                     name: row.name
@@ -250,13 +260,23 @@
                 let iframe = document.getElementById('iframe').contentWindow;
                 iframe.postMessage("[edit]" + localStorage.getItem("original"), '*');
             },
+
+            // 保存按钮
             handleSave() {
                 if (this.isNew) {
                     this.showDialog();
                     axios.post("/editor/saveScriptToTemp", {
                         editorContent: localStorage.getItem("content")
                     }).then((res) => {
-                        console.log(res.data.data);
+                        // console.log(res.data.data);
+                        if (res.data.code == 200){
+
+                        }else{
+                            this.$notify.error({
+                                title: '保存出错',
+                                message: res.data.message
+                            });
+                        }
                     })
                 } else {
                     axios.post("/editor/saveScript", {
@@ -264,7 +284,18 @@
                         scriptName: this.editingName,
                         editorContent: localStorage.getItem("content")
                     }).then((res) => {
-                        console.log(res.data.data);
+                        // console.log(res.data.data);
+                        if (res.data.code == 200){
+                            this.$notify.success({
+                                title: '保存成功',
+                                message: '脚本已保存至' + this.scriptsPath,
+                            });
+                        }else{
+                            this.$notify.error({
+                                title: '保存出错',
+                                message: res.data.message
+                            });
+                        }
                     })
                 }
             },
@@ -284,11 +315,18 @@
                 }).then((res) => {
                     // console.log(res.data.data);
                     if (res.data.code != 200){
-                        window.alert(res.data.message);
+                        this.$notify.error({
+                            title: '保存出错',
+                            message: res.data.message
+                        });
                         return;
                     }else{
                         this.dialogFormVisible = false;
                         this.isNew = false;
+                        this.$notify.success({
+                            title: '保存成功',
+                            message: '脚本已保存至' + this.scriptsPath,
+                        });
                         // 更新一下当前的脚本列表，该目录可能已经新增脚本了
                         this.getScripts();
                     }
@@ -305,8 +343,15 @@
                         // 拿到图片名，传给code，再插入光标处
                         let picName = res.data.data;
                         iframe.postMessage("[picName]" + picName, '*');
+                        this.$notify.success({
+                            title: '截图成功',
+                            message: picName
+                        });
                     }else{
-                        window.alert("截图失败，请重试。");
+                        this.$notify.error({
+                            title: '截图失败',
+                            message: res.data.message
+                        });
                     }
                 });
             },
@@ -320,6 +365,10 @@
                         this.url = res.data.data;
                     }else{
                         this.url = 'http://localhost:6630/img/default.png';
+                        this.$notify.warning({
+                            title: '预览出错',
+                            message: res.data.message
+                        });
                     }
                 });
             },
@@ -337,7 +386,10 @@
                     if (res.data.code == 200) {
 
                     }else{
-                        window.alert(res.data.message);
+                        this.$notify.warning({
+                            title: '新建脚本出错',
+                            message: res.data.message
+                        });
                     }
                 });
             },

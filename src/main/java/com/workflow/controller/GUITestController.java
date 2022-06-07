@@ -54,7 +54,7 @@ public class GUITestController {
             FastJsonUtils.writeFile("data.json", modifiedString);
         }
         log.info("sikuliPath: " + sikuliPath);
-        log.info(recent);
+
         return new RestBean<>(200, "set sikuliPath success");
     }
 
@@ -73,7 +73,7 @@ public class GUITestController {
             FastJsonUtils.writeFile("data.json", modifiedString);
         }
         log.info("downloadPath: " + downloadPath);
-        log.info(recent);
+
         return new RestBean<>(200, "set downloadPath success");
     }
 
@@ -92,7 +92,7 @@ public class GUITestController {
             FastJsonUtils.writeFile("data.json", modifiedString);
         }
         log.info("failedHandlerPath: " + failedHandlerPath);
-        log.info(recent);
+
         return new RestBean<>(200, "set failedHandlerPath success");
     }
 
@@ -124,6 +124,7 @@ public class GUITestController {
             scriptsName.add(file.getName().replace(".sikuli", ""));
         });
 
+        log.info("scriptsPath:" + this.scriptsPath);
 
         return new RestBean<>(200, "set scriptsPath success", scriptsName);
     }
