@@ -1,11 +1,10 @@
 package com.workflow.controller;
 
-import com.workflow.util.Command;
-import com.workflow.util.EasyExcelUtil;
-import com.workflow.util.FileUtil;
+import com.workflow.pojo.json.All;
+import com.workflow.util.*;
 import com.workflow.resp.RestBean;
 import com.workflow.resp.data.Result;
-import com.workflow.util.RobotUtil;
+import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.joda.time.DateTime;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,10 +50,19 @@ public class GUITestController {
     }
 
 
+    @SneakyThrows
     @PostMapping("/setScriptsPath")
     public RestBean<List<String>> setScriptsPath(@RequestBody HashMap<String, String> map) {
 
         this.scriptsPath = map.get("scriptsPath");
+        String recent = map.get("recent");
+        if (recent != null){
+            // 存入data.json
+            All all = FastJsonUtils.readFile("data.json");
+            all.getScript().setRecent(Long.valueOf(recent));
+            String modifiedString = FastJsonUtils.toJSONString(all);
+            FastJsonUtils.writeFile("data.json", modifiedString);
+        }
 
         if (scriptsPath.equals("")) {
             return new RestBean<>(500, "脚本目录不能为空!");

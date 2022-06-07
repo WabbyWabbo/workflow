@@ -9,6 +9,7 @@ import java.util.List;
 public class SikuliVO {
 
     private Long   total;
+    private Long recent;
     private List<Sikuli> list;
 
 }

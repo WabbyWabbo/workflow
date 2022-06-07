@@ -107,7 +107,7 @@ public class DownloadServiceImpl implements DownloadService {
             for (int i = 0; i < list.size(); i++) {
                 DirResult temp = new DirResult();
                 temp.setLabel(list.get(i).getPath());
-                temp.setValue(list.get(i).getPath());
+                temp.setValue(i);
                 downloadDirs.add(temp);
             }
         }

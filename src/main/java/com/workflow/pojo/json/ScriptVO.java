@@ -9,6 +9,7 @@ import java.util.List;
 public class ScriptVO {
 
     private Long   total;
+    private Long recent;
     private List<Script> list;
 
 }

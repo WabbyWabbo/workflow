@@ -107,10 +107,12 @@ public class ScriptServiceImpl implements ScriptService {
             for (int i = 0; i < list.size(); i++) {
                 DirResult temp = new DirResult();
                 temp.setLabel(list.get(i).getPath());
-                temp.setValue(list.get(i).getPath());
+                temp.setValue(i);
                 scriptDirs.add(temp);
             }
         }
-        return Result.success(scriptDirs);
+        Long recent = all.getScript().getRecent();
+        Object[] res = new Object[]{recent,scriptDirs};
+        return Result.success(res);
     }
 }

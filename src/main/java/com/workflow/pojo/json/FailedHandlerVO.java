@@ -9,6 +9,7 @@ import java.util.List;
 public class FailedHandlerVO {
 
     private Long   total;
+    private Long recent;
     private List<FailedHandler> list;
 
 }

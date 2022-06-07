@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class DirResult {
-    private String value;
+    private Integer value;
     private String label;
 }

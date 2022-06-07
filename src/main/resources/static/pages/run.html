@@ -64,10 +64,10 @@
                             :value="item.value">
                     </el-option>
                 </el-select>
-                <el-select v-model="scriptsPath" @change="getScripts" filterable placeholder="请选择脚本目录">
+                <el-select v-model="scriptsPathSelectedIndex" @change="getScripts" filterable placeholder="请选择脚本目录">
                     <el-option
                             v-for="item in scriptsDirs"
-                            :key="item.label"
+                            :key="item.value"
                             :label="item.label"
                             :value="item.value">
                     </el-option>
@@ -164,6 +164,8 @@
             data() {
                 return {
                     scriptsPath: "",
+                    recent: 0,
+                    scriptsPathSelectedIndex: 0,
                     sikuliPath: "",
                     downloadPath: "",
                     failedHandlerPath:"",
@@ -208,9 +210,12 @@
                 getScripts() {
                     this.data = [];
                     this.selected = []; // 重新输入脚本目录后，都要清空
+                    this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
+                    this.recent = this.scriptsPathSelectedIndex;
                     let that = this;
                     axios.post("/setScriptsPath", {
                         scriptsPath: this.scriptsPath,
+                        recent: this.recent
                     }).then((res) => {
                         let scripts_arr = res.data.data;
                         for (let i = 0; i < scripts_arr.length; i++) {
@@ -306,39 +311,76 @@
             }
             ,
             mounted() {
+                // 加载页面时获取Sikuli.jar位置
                 axios.get("/getSikuliDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
                         this.sikuliDirs = res.data.data;
                     }
+                    // 默认加载第一条记录
+                    if (this.sikuliDirs != null)
+                        this.sikuliPath = this.sikuliDirs[0].label;
                 }).catch((error) => {
                     console.log(error);
                 });
 
+                // 加载页面时获取脚本目录位置
                 axios.get("/getScriptsDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
-                        this.scriptsDirs = res.data.data;
+                        this.recent = res.data.data[0];
+                        this.scriptsPathSelectedIndex = this.recent;
+                        this.scriptsDirs = res.data.data[1];
                     }
+                    // 默认加载recent对应的目录
+                    this.scriptsPath = this.scriptsDirs[this.recent].label;
+                    this.data = [];
+                    this.selected = []; // 重新输入脚本目录后，都要清空
+                    let that = this;
+                    axios.post("/setScriptsPath", {
+                        scriptsPath: this.scriptsPath,
+                        recent: this.recent
+                    }).then((res) => {
+                        let scripts_arr = res.data.data;
+                        for (let i = 0; i < scripts_arr.length; i++) {
+                            that.data.push({
+                                key: i + 1,
+                                label: scripts_arr[i],
+                            });
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                    });
                 }).catch((error) => {
                     console.log(error);
                 });
+
+
+
                 axios.get("/getDownloadDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
                         this.downloadDirs = res.data.data;
                     }
+                    if (this.downloadDirs != null){
+                        this.downloadPath = this.downloadDirs[0].label;
+                    }
                 }).catch((error) => {
                     console.log(error);
                 });
+
                 axios.get("/getFailedHandlerDirs").then((res) => {
                     // console.log(res.data)
                     if (res.data.success) {
                         this.failedHandlerDirs = res.data.data;
                     }
+                    if (this.failedHandlerDirs != null)
+                        this.failedHandlerPath = this.failedHandlerDirs[0].label;
                 }).catch((error) => {
                     console.log(error);
                 });
+
+                // 拖拽排序工作
                 const transfer = this.$refs.transfer.$el;
 
                 const rightPanel = transfer
