@@ -1,7 +1,6 @@
 package com.workflow.util;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class FileUtil {
 
     /**
      * @Author：yatung
-     * @Description：获取某个目录下所有.sikuli脚本
+     * @Description：获取某个目录下所有png图片
      * @Date：
      */
     public static List<File> getPictures(String path) {

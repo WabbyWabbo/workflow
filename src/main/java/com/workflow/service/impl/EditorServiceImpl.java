@@ -21,17 +21,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Log
 public class EditorServiceImpl implements EditorService {
 
     private String mImagesPath = "C:\\pic_temp";
-    private Set<String> pictureNames = new HashSet<>();
+    private Set<String> pictureNamesInTempFloder = new HashSet<>();
 
     public static volatile boolean captureFinished = false;
     public static volatile boolean captureCanceled = false;
@@ -46,26 +44,28 @@ public class EditorServiceImpl implements EditorService {
         boolean b = FileUtil.deleteDir(mImagesPath);
         if (!b)
             log.info("清空临时文件夹失败");
-        pictureNames.clear();
+        pictureNamesInTempFloder.clear();
         // 将改脚本里的所有图片拷贝至temp目录
         List<File> pictures = FileUtil.getPictures(scriptDir);
         for (File picture : pictures) {
             String pictureName = picture.getName(); // 1652349177524.png
             File tempPicture = new File(mImagesPath + "\\" + pictureName);
             FileCopyUtils.copy(picture, tempPicture);
-            pictureNames.add(pictureName);
+            pictureNamesInTempFloder.add(pictureName);
         }
         return Result.success(codeContent);
     }
 
     @Override
     public Result saveContent(HashMap<String, String> map) {
-        String scriptDir = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli\\" + map.get("scriptName") + ".py";
+        String scriptsPath = map.get("scriptsPath");
+        String scriptName = map.get("scriptName");
         String content = map.get("editorContent");
-
+        String scriptDir = scriptsPath + "\\" + scriptName + ".sikuli\\" + scriptName + ".py";
         boolean b = FileUtil.saveScript(scriptDir, content);
+        List<String> deletedPicNames = deleteUselessPic(scriptsPath, scriptName, content);
         if (b)
-            return Result.success("ok");
+            return Result.success(deletedPicNames); // 返回已删除的图片名
         else
             return Result.fail(500, "写入文件失败");
     }
@@ -91,6 +91,10 @@ public class EditorServiceImpl implements EditorService {
             fileName = startTime + ".png";
         } else {
             fileName = userSetPicName + ".png";
+        }
+
+        if (pictureNamesInTempFloder.contains(fileName)) {
+            log.info("重名，即将覆盖掉");
         }
 
         log.info("fileName:" + fileName);
@@ -142,7 +146,7 @@ public class EditorServiceImpl implements EditorService {
         // 新截的图也要放到temp目录下，以便于预览
         File newPicture = new File(mImagesPath + "\\" + fileName);
         ImageIO.write((RenderedImage) imageFromClipboard, "png", newPicture);
-        pictureNames.add(fileName);
+        pictureNamesInTempFloder.add(fileName);
 
         // 截图的同时保存json文件
         String jsonFileName = fileName.replace(".png", ".json");
@@ -186,7 +190,7 @@ public class EditorServiceImpl implements EditorService {
         String picName = selectedText + ".png";
         String url;
         // 判断是否存在对应的图片
-        if (pictureNames.contains(picName)) {
+        if (pictureNamesInTempFloder.contains(picName)) {
             url = "http://localhost:6630/images/" + picName;
             return Result.success(url);
         } else {
@@ -237,5 +241,37 @@ public class EditorServiceImpl implements EditorService {
             return Result.success("ok");
         else
             return Result.fail(500, "写入temp.py失败");
+    }
+
+    /**
+     * 辅助函数，用于在点击保存按钮后，清空无用的图片，模仿原生sikuli的做法，保存按钮点击过后，将无法恢复！！！
+     *
+     * @param scriptsPath 脚本目录
+     * @param scriptName  脚本名
+     * @param content     脚本内容
+     * @return 已彻底删除的图片名称列表
+     */
+    private List<String> deleteUselessPic(String scriptsPath, String scriptName, String content) {
+        String fullPath = scriptsPath + "\\" + scriptName + ".sikuli";
+        File scriptDir = new File(fullPath);
+        // 遍历该脚本的文件夹，形成图片列表picturesInRealFolder
+        if (!scriptDir.exists() || !scriptDir.isDirectory()) {
+            return new ArrayList<>();
+        }
+        List<File> picturesInRealFolder = FileUtil.getPictures(fullPath);
+        // 脚本中已经不包含该图片名，则从磁盘上删除该图片
+        List<String> deletedPictureNames = new ArrayList<>();
+        for (File file : picturesInRealFolder) {
+            if (!content.contains(file.getName().replace(".png", ""))) {    // 删到图片名时再彻底删除，删.png则不动
+                if (file.delete())
+                    deletedPictureNames.add(file.getName());
+                // 若有同名json文件，一并删除
+                File jsonFile = new File(file.getAbsolutePath().replace(".png", ".json"));
+                if (jsonFile.exists() && jsonFile.isFile()) {
+                    jsonFile.delete();
+                }
+            }
+        }
+        return deletedPictureNames;
     }
 }

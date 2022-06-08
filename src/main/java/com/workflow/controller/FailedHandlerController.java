@@ -4,7 +4,10 @@ import com.workflow.model.params.PageParam;
 import com.workflow.pojo.FailedHandler;
 import com.workflow.service.FailedHandlerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import vo.Result;
 
 @RestController
@@ -33,8 +36,4 @@ public class FailedHandlerController {
         return failedHandlerService.update(failedHandler);
     }
 
-    @GetMapping("/failedHandler/delete/{id}")
-    public Result delete(@PathVariable("id") Long id){
-        return failedHandlerService.delete(id);
-    }
 }

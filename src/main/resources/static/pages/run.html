@@ -332,7 +332,8 @@
                                 if (response.data.code == 500) {
                                     that.$notify.error({
                                         title: '运行出错',
-                                        message: response.data.message
+                                        message: response.data.message,
+                                        duration: 0
                                     });
                                     that.loadingbut = false;
                                     that.download_disable = true;
@@ -368,7 +369,8 @@
                             if (response.data.code == 500) {
                                 that.$notify.error({
                                     title: '下载出错',
-                                    message: response.data.message
+                                    message: response.data.message,
+                                    duration: 0
                                 });
                             }
                         });
@@ -386,7 +388,8 @@
                         if (response.data.code == 500) {
                             that.$notify.error({
                                 title: '停止出错',
-                                message: response.data.message
+                                message: response.data.message,
+                                duration: 0
                             });
                         }
                     });

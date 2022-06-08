@@ -49,5 +49,4 @@ public class EditorController {
         return editorService.createTempScript();
     }
 
-
 }

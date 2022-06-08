@@ -185,7 +185,7 @@
                         <el-row>
                             <el-col>
                                 <el-form-item label="保存路径" prop="path">
-<!--                                    <el-input v-model="scriptsPath"/>-->
+                                    <!--                                    <el-input v-model="scriptsPath"/>-->
                                     <el-select
                                             v-model="scriptsPathSelectedIndex"
                                             filterable
@@ -280,7 +280,7 @@
                 let iframe = document.getElementById('iframe').contentWindow;
                 // 在新建态下，点击查看按钮，应该恢复scriptsPath和isNew状态
                 this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
-                this.isNew =false;
+                this.isNew = false;
                 axios.post("/editor/editScript", {
                     scriptsPath: this.scriptsPath,
                     name: row.name
@@ -305,12 +305,13 @@
                         editorContent: localStorage.getItem("content")
                     }).then((res) => {
                         // console.log(res.data.data);
-                        if (res.data.code == 200){
+                        if (res.data.code == 200) {
 
-                        }else{
+                        } else {
                             this.$notify.error({
                                 title: '保存出错',
-                                message: res.data.message
+                                message: res.data.message,
+                                duration: 0
                             });
                         }
                     })
@@ -321,15 +322,23 @@
                         editorContent: localStorage.getItem("content")
                     }).then((res) => {
                         // console.log(res.data.data);
-                        if (res.data.code == 200){
+                        if (res.data.code == 200) {
                             this.$notify.success({
                                 title: '保存成功',
                                 message: '脚本已保存至' + this.scriptsPath,
                             });
-                        }else{
+                            let deletedPicNames = res.data.data;
+                            this.$notify.info({
+                                title: '已删除未使用的图片',
+                                message: deletedPicNames,
+                                offset: 100,
+                            });
+
+                        } else {
                             this.$notify.error({
                                 title: '保存出错',
-                                message: res.data.message
+                                message: res.data.message,
+                                duration: 0
                             });
                         }
                     })
@@ -350,13 +359,14 @@
                     scriptName: this.editingName,
                 }).then((res) => {
                     // console.log(res.data.data);
-                    if (res.data.code != 200){
+                    if (res.data.code != 200) {
                         this.$notify.error({
                             title: '保存出错',
-                            message: res.data.message
+                            message: res.data.message,
+                            duration: 0
                         });
                         return;
-                    }else{
+                    } else {
                         this.dialogFormVisible = false;
                         this.isNew = false;
                         this.$notify.success({
@@ -386,10 +396,11 @@
                             title: '截图成功',
                             message: picName
                         });
-                    }else{
+                    } else {
                         this.$notify.error({
-                            title: '截图失败',
-                            message: res.data.message
+                            title: '截图失败,请重试！',
+                            message: res.data.message,
+                            duration: 0
                         });
                     }
                 });
@@ -402,7 +413,7 @@
                 }).then((res) => {
                     if (res.data.code == 200) {
                         this.url = res.data.data;
-                    }else{
+                    } else {
                         this.url = 'http://localhost:6630/img/default.png';
                         this.$notify.warning({
                             title: '预览出错',
@@ -412,7 +423,7 @@
                 });
             },
             // 新建按钮
-            handleCreate(){
+            handleCreate() {
                 this.isNew = true;
                 this.isSelected = true;
                 this.isEditing = true;
@@ -424,7 +435,7 @@
                 axios.post("/editor/newScript").then((res) => {
                     if (res.data.code == 200) {
 
-                    }else{
+                    } else {
                         this.$notify.warning({
                             title: '新建脚本出错',
                             message: res.data.message
@@ -466,12 +477,30 @@
                 console.log(error);
             });
 
-
+            // 接收code传过来的当前ace中的内容，并保存至localStorage(chang时传content，blur时传selectedText)
+            // let that = this;
             window.addEventListener('message', function (event) {
                 if (event.data.startsWith('[selectedText]')) {
                     localStorage.setItem("selectedText", event.data.replace('[selectedText]', ''));
                 } else {
                     localStorage.setItem("content", event.data);
+                    // 使用Ctrl-X 和 Ctrl-V时会永久删除图片无法恢复，舍弃该方案，改为点击保存时做无用图片删除
+                    // // content发生改变时，将当前脚本的位置和content发给后端，用于删除无用的图片
+                    // axios.post("/editor/deleteUselessPic", {
+                    //     content: event.data,
+                    //     scriptsPath: that.scriptsPath,
+                    //     scriptName: that.editingName,
+                    // }).then((res) => {
+                    //     if (res.data.success){
+                    //         let deletedPicNames = res.data.data;
+                    //         for (let i = 0; i < deletedPicNames.length; i++) {
+                    //             that.$notify.info({
+                    //                 title: '已删除图片',
+                    //                 message: deletedPicNames[i]
+                    //             });
+                    //         }
+                    //     }
+                    // })
                 }
             })
         },
