@@ -2,7 +2,9 @@ package com.workflow.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.workflow.service.EditorService;
-import com.workflow.util.*;
+import com.workflow.util.ClipboardOperate;
+import com.workflow.util.FileUtil;
+import com.workflow.util.RobotUtil;
 import com.workflow.util.jna.MouseLLHook;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
@@ -10,15 +12,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
 import vo.Result;
-import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.RenderedImage;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Log
@@ -78,7 +84,16 @@ public class EditorServiceImpl implements EditorService {
 
         // 生成图片全路径名
         String scriptDir = map.get("scriptsPath") + "\\" + map.get("scriptName") + ".sikuli\\";
-        String fileName = String.valueOf(System.currentTimeMillis()) + ".png";
+        String userSetPicName = map.get("userSetPicName");
+        String fileName;
+        long startTime = System.currentTimeMillis();
+        if (userSetPicName == null || userSetPicName.isEmpty() || userSetPicName.isBlank()) {
+            fileName = startTime + ".png";
+        } else {
+            fileName = userSetPicName + ".png";
+        }
+
+        log.info("fileName:" + fileName);
 
         // 监听鼠标事件
         captureFinished = false;
@@ -86,7 +101,7 @@ public class EditorServiceImpl implements EditorService {
         // 等待鼠标松开 或者 取消本次截图
         while (!captureFinished && !captureCanceled) {
             // 超过10秒，强制结束等待
-            long time = System.currentTimeMillis() - Long.parseLong(fileName.replace(".png", ""));
+            long time = System.currentTimeMillis() - startTime;
             if (time > 10000) {
                 log.info("超过10秒");
                 break;

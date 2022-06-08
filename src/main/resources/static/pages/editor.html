@@ -53,6 +53,14 @@
             height: 400px;
             object-fit: contain;
         }
+
+        /*.input-with-button .el-input-group__append {*/
+        /*    color: #FFF;*/
+        /*    background-color: #409EFF;*/
+        /*    border-color: #409EFF;*/
+        /*}*/
+
+
     </style>
 
 </head>
@@ -69,27 +77,54 @@
     <div class="app-container">
         <div class="box">
             <div class="filter-container">
-                <el-select v-model="scriptsPathSelectedIndex" @change="getScripts" filterable placeholder="请选择脚本目录"
-                           style="width: 25%">
-                    <el-option
-                            v-for="item in scriptsDirs"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value">
-                    </el-option>
-                </el-select>
+                <el-row :gutter="20">
+                    <el-col :span="6">
+                        <div class="grid-content">
+                            <el-select v-model="scriptsPathSelectedIndex" @change="getScripts" filterable
+                                       placeholder="请选择脚本目录" style="width: 100%">
+                                <el-option
+                                        v-for="item in scriptsDirs"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </el-col>
+                    <el-col :span="1">
+                        <div class="grid-content">
+                            <el-button class="butT" @click="handleCreate()">新建</el-button>
+                        </div>
+                    </el-col>
+                    <el-col :span="1">
+                        <div class="grid-content">
+                            <el-button @click="handleEdit()" :disabled="!isSelected">编辑</el-button>
+                        </div>
+                    </el-col>
+                    <el-col :span="1">
+                        <div class="grid-content">
+                            <el-button @click="handleSave()" :disabled="!isSelected" style="display: inline">保存
+                            </el-button>
+                        </div>
+                    </el-col>
+                    <el-col :span="4">
+                        <div class="grid-content">
+                            <el-input class="input-with-button" placeholder="请输入图片名" v-model="userSetPicName"
+                                      maxlength="20">
+                                <el-button slot="append" @click="handleCapture()" :disabled="!isSelected || !isEditing">
+                                    截图
+                                </el-button>
+                            </el-input>
+                        </div>
+                    </el-col>
+                    <el-col :span="1">
+                        <div class="grid-content">
+                            <el-button @click="handlePreview()" :disabled="!isSelected" style="display: inline">预览
+                            </el-button>
+                        </div>
+                    </el-col>
+                </el-row>
 
-
-                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
-                <el-button type="primary" @click="handleEdit()" :disabled="!isSelected" style="display: inline">编辑
-                </el-button>
-                <el-button type="primary" @click="handleSave()" :disabled="!isSelected" style="display: inline">保存
-                </el-button>
-                <el-button type="primary" @click="handleCapture()" :disabled="!isSelected || !isEditing"
-                           style="display: inline">截图
-                </el-button>
-                <el-button type="primary" @click="handlePreview()" :disabled="!isSelected" style="display: inline">预览
-                </el-button>
             </div>
             <div>
                 <el-row :gutter="20">
@@ -209,7 +244,8 @@
                     path: [{required: true, message: '必填项', trigger: 'blur'}],
                 },
                 url: 'http://localhost:6630/img/default.png',
-                recent: 0
+                recent: 0,
+                userSetPicName: '',
             };
         },
         watch: {},
@@ -337,12 +373,15 @@
                 let iframe = document.getElementById('iframe').contentWindow;
                 axios.post("/editor/capture", {
                     scriptsPath: this.scriptsPath,
-                    scriptName: this.editingName
+                    scriptName: this.editingName,
+                    userSetPicName: this.userSetPicName
                 }).then((res) => {
-                    if (res.data.code == 200){
+                    if (res.data.code == 200) {
                         // 拿到图片名，传给code，再插入光标处
                         let picName = res.data.data;
                         iframe.postMessage("[picName]" + picName, '*');
+                        // 清空图片名的输入框
+                        this.userSetPicName = '';
                         this.$notify.success({
                             title: '截图成功',
                             message: picName
