@@ -49,17 +49,10 @@
             background-color: #f9fafc;
         }
 
-        img.a {
-            width: 260px;
-            height: 400px;
-            object-fit: contain;
-        }
 
-        /*.input-with-button .el-input-group__append {*/
-        /*    color: #FFF;*/
-        /*    background-color: #409EFF;*/
-        /*    border-color: #409EFF;*/
-        /*}*/
+        .el-scrollbar__wrap {
+            overflow-x: hidden;
+        }
 
 
     </style>
@@ -124,11 +117,14 @@
                             </el-button>
                         </div>
                     </el-col>
+                    <el-col :span="6"></el-col>
+                    <el-col :span="4">
+                    </el-col>
                 </el-row>
 
             </div>
             <div>
-                <el-row :gutter="20">
+                <el-row :gutter="20" style="margin-bottom: 0px">
                     <el-col :span="6">
                         <div class="grid-content bg-purple">
                             <el-table
@@ -166,8 +162,16 @@
                         </div>
                     </el-col>
                     <el-col :span="4">
-                        <img class="a" :src="url" alt="Picture" width="400" height="300">
-                        <!--                        <el-image v-for="url in urls" :key="url" :src="url" lazy></el-image>-->
+                        <el-scrollbar ref="el_scrollbar" style="height: 680px">
+                            <el-image
+                                    v-for="url in urls"
+                                    :key="url"
+                                    :src="url"
+                                    fit="contain"
+                                    @click="copyPicName(url)"
+                                    style="border: thin dotted #FF0000; margin: 2px">
+                            </el-image> <!-- style="width: 100px; height: 100px; display: block" -->
+                        </el-scrollbar>
                     </el-col>
                 </el-row>
             </div>
@@ -210,6 +214,16 @@
                 </el-dialog>
             </div>
         </div>
+
+        <el-drawer
+                :title="picName"
+                :visible.sync="picDrawer">
+            <el-image :src="url" alt="Picture" fit="contain">
+                <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                </div>
+            </el-image>
+        </el-drawer>
     </div>
 </div>
 </body>
@@ -244,9 +258,13 @@
                     name: [{required: true, message: '必填项', trigger: 'blur'}],
                     path: [{required: true, message: '必填项', trigger: 'blur'}],
                 },
-                url: 'http://localhost:6630/img/default.png',
+                // url: 'http://localhost:6630/img/default.png',
+                url: '',
+                picName: '',
+                urls: [],
                 recent: 0,
                 userSetPicName: '',
+                picDrawer: false,
             };
         },
         watch: {},
@@ -282,13 +300,14 @@
                 // 在新建态下，点击查看按钮，应该恢复scriptsPath和isNew状态
                 this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
                 this.isNew = false;
-                axios.post("/editor/editScript", {
+                axios.post("/editor/viewScript", {
                     scriptsPath: this.scriptsPath,
                     name: row.name
                 }).then((res) => {
                     // console.log(res.data.data);
-                    localStorage.setItem("original", res.data.data);
-                    iframe.postMessage("[view]" + res.data.data, '*');
+                    localStorage.setItem("original", res.data.data[0]);
+                    iframe.postMessage("[view]" + res.data.data[0], '*');
+                    this.urls = res.data.data[1];
                     // iframe.location.reload();
                 })
             },
@@ -394,6 +413,8 @@
                         iframe.postMessage("[picName]" + picName, '*');
                         // 清空图片名的输入框
                         this.userSetPicName = '';
+                        // 将新截的图的url放入urls
+                        this.urls.push('http://localhost:6630/images/' + picName);
                         this.$notify.success({
                             title: '截图成功',
                             message: picName
@@ -415,6 +436,8 @@
                 }).then((res) => {
                     if (res.data.code == 200) {
                         this.url = res.data.data;
+                        this.picName = this.url.replace('http://localhost:6630/images/', '');
+                        this.picDrawer = true;
                     } else {
                         this.url = 'http://localhost:6630/img/default.png';
                         this.$notify.warning({
@@ -433,10 +456,10 @@
                 this.editingName = 'temp';
                 let iframe = document.getElementById('iframe').contentWindow;
                 iframe.postMessage("[create]", '*');
-                // 请求清空temp目录
+                // 请求清空script_temp/temp.sikuli目录,同时清空pic_temp目录
                 axios.post("/editor/newScript").then((res) => {
                     if (res.data.code == 200) {
-
+                        this.urls = []
                     } else {
                         this.$notify.warning({
                             title: '新建脚本出错',
@@ -445,6 +468,28 @@
                     }
                 });
             },
+            // 点击图片复制图片名
+            copyPicName(url) {
+                let picName = url.replace('http://localhost:6630/images/', '');
+                let that = this;
+                navigator.clipboard.writeText(picName).then(function () {
+                    /* clipboard successfully set */
+                    that.$notify.success({
+                        title: '已复制图片名',
+                        message: picName
+                    });
+                }, function () {
+                    /* clipboard write failed */
+                    that.$notify.error({
+                        title: '复制图片名失败',
+                        message: picName
+                    });
+                });
+            },
+
+            handleClose(done) {
+                done();
+            }
         },
         created() {
         }

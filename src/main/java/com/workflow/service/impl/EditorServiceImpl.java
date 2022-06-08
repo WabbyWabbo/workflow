@@ -36,7 +36,7 @@ public class EditorServiceImpl implements EditorService {
 
     @SneakyThrows
     @Override
-    public Result getCodeContent(HashMap<String, String> map) {
+    public Result viewScript(HashMap<String, String> map) {
         String scriptDir = map.get("scriptsPath") + "\\" + map.get("name") + ".sikuli";
         String codeContent = FileUtil.getScriptCode(scriptDir);
 
@@ -45,15 +45,21 @@ public class EditorServiceImpl implements EditorService {
         if (!b)
             log.info("清空临时文件夹失败");
         pictureNamesInTempFloder.clear();
-        // 将改脚本里的所有图片拷贝至temp目录
+
+        // temp包装成url返回给前端
+        List<String> urls = new ArrayList<>();
+
+        // 将改脚本里的所有图片拷贝至temp目录,并添加至urls
         List<File> pictures = FileUtil.getPictures(scriptDir);
         for (File picture : pictures) {
             String pictureName = picture.getName(); // 1652349177524.png
             File tempPicture = new File(mImagesPath + "\\" + pictureName);
             FileCopyUtils.copy(picture, tempPicture);
             pictureNamesInTempFloder.add(pictureName);
+            urls.add("http://localhost:6630/images/" + pictureName);
         }
-        return Result.success(codeContent);
+
+        return Result.success(new Object[]{codeContent, urls});
     }
 
     @Override
@@ -228,8 +234,9 @@ public class EditorServiceImpl implements EditorService {
         // 重新生成.py文件
         File script = new File("C:\\script_temp\\temp.sikuli\\temp.py");
         script.createNewFile();
-
-        return Result.success("empty temp.sikuli folder: ok");
+        // 清空pic_temp目录
+        FileUtil.deleteDir("C:\\pic_temp");
+        return Result.success("empty temp.sikuli folder and pic_temp folder: ok");
     }
 
     @Override

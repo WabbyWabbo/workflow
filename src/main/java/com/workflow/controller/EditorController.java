@@ -14,9 +14,9 @@ public class EditorController {
     @Autowired
     EditorService editorService;
 
-    @PostMapping("/editor/editScript")
+    @PostMapping("/editor/viewScript")
     public Result editScript(@RequestBody HashMap<String, String> map){
-        return editorService.getCodeContent(map);
+        return editorService.viewScript(map);
     }
 
     @PostMapping("/editor/saveScript")
