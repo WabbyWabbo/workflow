@@ -52,6 +52,7 @@
 
         .el-scrollbar__wrap {
             overflow-x: hidden;
+            margin-bottom: 0 !important; /*解决下拉框最后一个option显示不完整的问题*/
         }
 
 
@@ -162,7 +163,7 @@
                         </div>
                     </el-col>
                     <el-col :span="4">
-                        <el-scrollbar ref="el_scrollbar" style="height: 680px">
+                        <el-scrollbar ref="el_scrollbar" style="height: 692px">
                             <el-image
                                     v-for="url in urls"
                                     :key="url"

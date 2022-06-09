@@ -125,7 +125,7 @@ public class EditorServiceImpl implements EditorService {
         }
 
         // 从剪贴板获取图片
-        Thread.sleep(500);
+        Thread.sleep(1000);
         Image imageFromClipboard = null;
         try {
             // java.lang.IllegalStateException: cannot open system clipboard

@@ -48,10 +48,16 @@
         "id": 2,
         "name": "",
         "path": "D:\\Fisher\\Desktop\\scripts"
+      },
+      {
+        "description": "",
+        "id": 3,
+        "name": "",
+        "path": "sdfsf"
       }
     ],
-    "recent": 0,
-    "total": 2
+    "recent": 1,
+    "total": 3
   },
   "sikuli": {
     "list": [
@@ -68,7 +74,7 @@
         "path": "D:\\Fisher\\Desktop\\sikulixide-2.0.5-win.jar"
       }
     ],
-    "recent": 0,
+    "recent": 1,
     "total": 2
   }
 }

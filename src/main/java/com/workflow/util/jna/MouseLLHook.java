@@ -11,12 +11,9 @@ import com.sun.jna.platform.win32.WinUser.LowLevelKeyboardProc;
 import com.sun.jna.platform.win32.WinUser.MSG;
 import com.workflow.service.impl.EditorServiceImpl;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.java.Log;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-
-@Slf4j
+@Log
 public class MouseLLHook {
 
     // 鼠标钩子函数里判断按键类型的常数  
@@ -60,13 +57,13 @@ public class MouseLLHook {
                                     MOUSEHOOKSTRUCT lParam) {
                 switch (wParam.intValue()) {
                     case WM_LBUTTONDOWN:
-                        log.debug("mouse left button down:" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
+                        log.fine("mouse left button down:" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
                         x = lParam.pt.x;
                         y = lParam.pt.y;
                         EditorServiceImpl.captureFinished = false;
                         break;
                     case WM_LBUTTONUP:
-                        log.debug("mouse left button up" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
+                        log.fine("mouse left button up" + "(" + lParam.pt.x + "," + lParam.pt.y + ")");
                         EditorServiceImpl.captureFinished = true;
                         break;
                     default:
