@@ -155,8 +155,8 @@
                             type="textarea"
                             autosize
                             placeholder="日志展示区"
-                            show-word-limit="true"
-                            readonly="true"
+                            :show-word-limit="true"
+                            :readonly="true"
                             v-model="allInfo">
                     </el-input>
                 </el-drawer>
@@ -167,7 +167,7 @@
 </div>
 </body>
 <!-- 引入组件库 -->
-<script src="../js/vue.js"></script>
+<script src="../js/vue.min.js"></script>
 <script src="../plugins/element-ui/index.js"></script>
 <script src="../plugins/sortable/Sortable.min.js"></script>
 <script type="text/javascript" src="../js/jquery.min.js"></script>
