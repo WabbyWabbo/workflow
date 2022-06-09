@@ -18,4 +18,6 @@ public interface EditorService {
     Result createTempScript();
 
     Result saveScriptToTemp(HashMap<String, String> map);
+
+    Result runScript(HashMap<String, String> map);
 }

@@ -1,10 +1,9 @@
 package com.workflow.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.workflow.pojo.json.All;
 import com.workflow.service.EditorService;
-import com.workflow.util.ClipboardOperate;
-import com.workflow.util.FileUtil;
-import com.workflow.util.RobotUtil;
+import com.workflow.util.*;
 import com.workflow.util.jna.MouseLLHook;
 import lombok.SneakyThrows;
 import lombok.extern.java.Log;
@@ -248,6 +247,33 @@ public class EditorServiceImpl implements EditorService {
             return Result.success("ok");
         else
             return Result.fail(500, "写入temp.py失败");
+    }
+
+    @Override
+    public Result runScript(HashMap<String, String> map) {
+        String scriptsPath = map.get("scriptsPath");
+        String scriptName = map.get("scriptName");
+        String absoluteScriptPath = scriptsPath + "\\" + scriptName;
+        // 去data.json中找最近使用的sikuliPath
+        All all = FastJsonUtils.readFile("data.json");
+        Long recent = all.getSikuli().getRecent();
+        String sikuliPath = all.getSikuli().getList().get(Math.toIntExact(recent)).getPath();
+        log.info("Found sikuliPath in data.json: " + sikuliPath);
+        if (sikuliPath.isEmpty() || sikuliPath.isBlank()) {
+            return Result.fail(400, "sikuli路径设置错误");
+        }
+        File py = new File(absoluteScriptPath + ".sikuli\\" + scriptName + ".py");
+        if (null == py || 0 == py.length() || !py.exists()) {
+            return Result.fail(300, "脚本内容为空，请先点击保存！");
+        }
+        // 最小化浏览器
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_SPACE, KeyEvent.VK_N);
+        // 执行脚本
+        log.info("Ready to run: " + absoluteScriptPath);
+        com.workflow.resp.data.Result result = Command.execScriptToResult(sikuliPath, absoluteScriptPath);
+        // 返回浏览器
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
+        return Result.success(result);
     }
 
     /**

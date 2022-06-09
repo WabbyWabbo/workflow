@@ -40,13 +40,18 @@ public class EditorController {
     }
 
     @PostMapping("/editor/saveScriptToTemp")
-    public Result saveScriptToTemp(@RequestBody HashMap<String, String> map){
+    public Result saveScriptToTemp(@RequestBody HashMap<String, String> map) {
         return editorService.saveScriptToTemp(map);
     }
 
     @PostMapping("/editor/newScript")
-    public Result newScript(){
+    public Result newScript() {
         return editorService.createTempScript();
+    }
+
+    @PostMapping("/editor/runScript")
+    public Result runScript(@RequestBody HashMap<String, String> map) {
+        return editorService.runScript(map);
     }
 
 }

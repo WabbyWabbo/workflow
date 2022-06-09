@@ -75,7 +75,8 @@
                 <el-row :gutter="20">
                     <el-col :span="6">
                         <div class="grid-content">
-                            <el-select v-model="scriptsPathSelectedIndex" @change="getScripts" filterable
+                            <el-select v-model="scriptsPathSelectedIndex" @focus="clickSelector()" @change="getScripts"
+                                       filterable
                                        placeholder="请选择脚本目录" style="width: 100%">
                                 <el-option
                                         v-for="item in scriptsDirs"
@@ -120,6 +121,14 @@
                     </el-col>
                     <el-col :span="6"></el-col>
                     <el-col :span="4">
+                        <div class="grid-content">
+                            <el-button @click="handleRun()" :disabled="!isSelected" style="display: inline"
+                                       icon="el-icon-video-play">运行
+                            </el-button>
+                            <el-button @click="allInfoDrawer = true" :disabled="!isSelected || !isRunFinished"
+                                       style="display: inline">查看运行日志
+                            </el-button>
+                        </div>
                     </el-col>
                 </el-row>
 
@@ -225,6 +234,31 @@
                 </div>
             </el-image>
         </el-drawer>
+
+        <el-drawer
+                :title="editingName"
+                :visible.sync="allInfoDrawer">
+            <el-input
+                    type="textarea"
+                    autosize
+                    placeholder="日志展示区"
+                    :show-word-limit="true"
+                    :readonly="true"
+                    v-model="allInfo">
+            </el-input>
+        </el-drawer>
+
+        <el-dialog
+                title="提示"
+                :visible.sync="askBeforeViewOthersDialogVisible"
+                width="30%">
+            <span>当前脚本编辑的内容尚未保存，是否保存？</span>
+            <span slot="footer" class="dialog-footer">
+    <el-button @click="handleCancelButtonInDialog()">不保存</el-button>
+    <el-button type="primary" @click="handleOKButtonInDialog()">保 存</el-button>
+  </span>
+        </el-dialog>
+
     </div>
 </div>
 </body>
@@ -266,16 +300,32 @@
                 recent: 0,
                 userSetPicName: '',
                 picDrawer: false,
+                allInfoDrawer: false,
+                allInfo: '',
+                isRunFinished: false,
+                askBeforeViewOthersDialogVisible: false,
+                currentRow: {},
             };
         },
         watch: {},
         computed: {},
         methods: {
+            clickSelector() {
+                if (this.checkIfChanged()) {
+                    this.$message({
+                        message: '当前编辑内容尚未保存，请先保存再切换目录！',
+                        type: 'error',
+                        center: true
+                    });
+                }
+            },
+
             getScripts() {
                 this.tableData = [];
                 this.selected = []; // 重新输入脚本目录后，都要清空
                 this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
                 this.recent = this.scriptsPathSelectedIndex;
+
                 let that = this;
                 axios.post("/setScriptsPath", {
                     scriptsPath: this.scriptsPath,
@@ -291,12 +341,24 @@
                     console.log(error);
                 });
             },
+            // 查看按钮
             handleView(row) {
+                this.currentRow = row;  // 保存起来给handleCancelButtonInDialog()和handleOKButtonInDialog()使用
+                if (this.checkIfChanged()) {
+                    this.askBeforeViewOthersDialogVisible = true;
+                    return;
+                } else {
+                    this.handleViewHelper(row);
+                }
+            },
+            // 辅助函数，直接切换其他脚本，不保存当前变化
+            handleViewHelper(row) {
                 this.$refs.singleTable.setCurrentRow(row);  // 高亮选中的行
                 this.code = '';
                 this.editingName = row.name;
                 this.isSelected = true;
                 this.isEditing = false;
+                this.isRunFinished = false;
                 let iframe = document.getElementById('iframe').contentWindow;
                 // 在新建态下，点击查看按钮，应该恢复scriptsPath和isNew状态
                 this.scriptsPath = this.scriptsDirs[this.scriptsPathSelectedIndex].label;
@@ -306,28 +368,42 @@
                     name: row.name
                 }).then((res) => {
                     // console.log(res.data.data);
-                    localStorage.setItem("original", res.data.data[0]);
+                    localStorage.setItem("contentInDisk", res.data.data[0]);
+                    localStorage.setItem("contentInEditor", res.data.data[0]);
                     iframe.postMessage("[view]" + res.data.data[0], '*');
                     this.urls = res.data.data[1];
                     // iframe.location.reload();
                 })
             },
+
+            // 对话框询问是否保存当前脚本内容
+            handleCancelButtonInDialog() {
+                this.askBeforeViewOthersDialogVisible = false;
+                this.handleViewHelper(this.currentRow);
+            },
+            handleOKButtonInDialog() {
+                this.askBeforeViewOthersDialogVisible = false;
+                this.handleSave();
+                this.handleViewHelper(this.currentRow);
+            },
+
             handleEdit() {
                 this.isEditing = true;
                 let iframe = document.getElementById('iframe').contentWindow;
-                iframe.postMessage("[edit]" + localStorage.getItem("original"), '*');
+                iframe.postMessage("[edit]" + localStorage.getItem("contentInDisk"), '*');
             },
 
             // 保存按钮
             handleSave() {
-                if (this.isNew) {
-                    this.showDialog();
+                if (this.isNew) {   // 新建脚本的保存
                     axios.post("/editor/saveScriptToTemp", {
-                        editorContent: localStorage.getItem("content")
+                        editorContent: localStorage.getItem("contentInEditor")
                     }).then((res) => {
                         // console.log(res.data.data);
                         if (res.data.code == 200) {
-
+                            // 此时已成功保存至script_temp\temp目录下，弹出对话框让用户选择自定义保存位置
+                            localStorage.setItem("contentInDisk", localStorage.getItem("contentInEditor"));
+                            this.showDialog();
                         } else {
                             this.$notify.error({
                                 title: '保存出错',
@@ -336,14 +412,15 @@
                             });
                         }
                     })
-                } else {
+                } else {    // 正常保存
                     axios.post("/editor/saveScript", {
                         scriptsPath: this.scriptsPath,
                         scriptName: this.editingName,
-                        editorContent: localStorage.getItem("content")
+                        editorContent: localStorage.getItem("contentInEditor")
                     }).then((res) => {
                         // console.log(res.data.data);
                         if (res.data.code == 200) {
+                            localStorage.setItem("contentInDisk", localStorage.getItem("contentInEditor"));
                             this.$notify.success({
                                 title: '保存成功',
                                 message: '脚本已保存至' + this.scriptsPath,
@@ -385,12 +462,12 @@
                         this.$notify.error({
                             title: '保存出错',
                             message: res.data.message,
-                            duration: 0
                         });
                         return;
                     } else {
                         this.dialogFormVisible = false;
                         this.isNew = false;
+                        localStorage.setItem("contentInDisk", localStorage.getItem("contentInEditor"));
                         this.$notify.success({
                             title: '保存成功',
                             message: '脚本已保存至' + this.scriptsPath,
@@ -453,6 +530,9 @@
                 this.isNew = true;
                 this.isSelected = true;
                 this.isEditing = true;
+                this.isRunFinished = false;
+                localStorage.setItem("contentInDisk", "");
+                localStorage.setItem("contentInEditor", "");
                 this.scriptsPath = 'C:\\script_temp';
                 this.editingName = 'temp';
                 let iframe = document.getElementById('iframe').contentWindow;
@@ -490,12 +570,56 @@
 
             handleClose(done) {
                 done();
+            },
+
+            // 运行按钮
+            handleRun() {
+                if (this.checkIfChanged()) {
+                    this.$message({
+                        message: '当前编辑内容尚未保存，请先保存再运行！',
+                        type: 'warning',
+                        center: true
+                    });
+                    return;
+                }
+                axios.post("/editor/runScript", {
+                    scriptsPath: this.scriptsPath,
+                    scriptName: this.editingName
+                }).then((res) => {
+                    this.isRunFinished = true;
+                    console.log(res.data);
+                    if (res.data.success) {
+                        this.allInfo = res.data.data.allInfo;
+                        this.$notify.success({
+                            title: '运行完成',
+                            message: '结果：' + res.data.data.pass
+                        })
+                    } else {
+                        this.$notify.error({
+                            title: '运行失败',
+                            message: res.data.message,
+                            duration: 0
+                        })
+                    }
+                })
+            },
+
+            // 未保存当前内容的辅助判断函数
+            checkIfChanged() {
+                let contentInDisk = localStorage.getItem("contentInDisk");
+                let contentInEditor = localStorage.getItem("contentInEditor");
+                if (contentInDisk === contentInEditor)
+                    return false;
+                else
+                    return true;
             }
         },
         created() {
         }
         ,
         mounted() {
+            localStorage.setItem("contentInDisk", "");
+            localStorage.setItem("contentInEditor", "");
             axios.get("/getScriptsDirs").then((res) => {
                 // console.log(res.data)
                 if (res.data.success) {
@@ -531,7 +655,7 @@
                 if (event.data.startsWith('[selectedText]')) {
                     localStorage.setItem("selectedText", event.data.replace('[selectedText]', ''));
                 } else {
-                    localStorage.setItem("content", event.data);
+                    localStorage.setItem("contentInEditor", event.data);
                     // 使用Ctrl-X 和 Ctrl-V时会永久删除图片无法恢复，舍弃该方案，改为点击保存时做无用图片删除
                     // // content发生改变时，将当前脚本的位置和content发给后端，用于删除无用的图片
                     // axios.post("/editor/deleteUselessPic", {
