@@ -253,7 +253,8 @@
                     placeholder="日志展示区"
                     :show-word-limit="true"
                     :readonly="true"
-                    v-model="allInfo">
+                    v-model="allInfo"
+                    style="font-family: Helvetica Neue">
             </el-input>
         </el-drawer>
 
@@ -362,6 +363,7 @@
             },
             // 辅助函数，直接切换其他脚本，不保存当前变化
             handleViewHelper(row) {
+                this.urls = [];
                 this.$refs.singleTable.setCurrentRow(row);  // 高亮选中的行
                 this.code = '';
                 this.editingName = row.name;
@@ -386,8 +388,6 @@
                             picName: res.data.data[1][i].replace("http://localhost:6630/images/", "")
                         });
                     }
-                    console.log(this.urls)
-                    // this.urls = res.data.data[1];
                 })
             },
 
@@ -442,11 +442,24 @@
                             });
                             let deletedPicNames = res.data.data;
                             if (deletedPicNames.length > 0)
-                                this.$notify.info({
-                                    title: '已删除未使用的图片',
-                                    message: deletedPicNames,
-                                    offset: 100,
-                                });
+                                console.log(deletedPicNames);
+                            console.log(this.urls);
+                            // 更新urls，保证右侧图片显示同步
+                            for (let i = 0; i < deletedPicNames.length; i++) {
+                                for (let j = 0; j < this.urls.length; j++) {
+                                    console.log(deletedPicNames[i]);
+                                    console.log(this.urls[j].picName);
+                                    if (deletedPicNames[i] === this.urls[j].picName) {
+                                        this.urls.splice(j, 1);
+                                    }
+                                }
+                            }
+                            console.log(this.urls);
+                            this.$notify.info({
+                                title: '已删除未使用的图片',
+                                message: deletedPicNames,
+                                offset: 100,
+                            });
 
                         } else {
                             this.$notify.error({
