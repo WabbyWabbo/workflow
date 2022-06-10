@@ -173,14 +173,23 @@
                     </el-col>
                     <el-col :span="4">
                         <el-scrollbar ref="el_scrollbar" style="height: 692px">
-                            <el-image
-                                    v-for="url in urls"
-                                    :key="url"
-                                    :src="url"
-                                    fit="contain"
-                                    @click="copyPicName(url)"
-                                    style="border: thin dotted #FF0000; margin: 2px">
-                            </el-image> <!-- style="width: 100px; height: 100px; display: block" -->
+                            <el-popover
+                                    v-for="item in urls"
+                                    :title="item.picName"
+                                    width="200"
+                                    trigger="hover"
+                                    content="点击图片即可复制图片名。"
+                                    open-delay="200"
+                                    close-delay="0">
+                                <el-image
+                                        slot="reference"
+                                        :key="item.url"
+                                        :src="item.url"
+                                        fit="contain"
+                                        @click="copyPicName(item.picName)"
+                                        style="border: thin dotted #FF0000; margin: 2px">
+                                </el-image> <!-- style="width: 100px; height: 100px; display: block" -->
+                            </el-popover>
                         </el-scrollbar>
                     </el-col>
                 </el-row>
@@ -371,8 +380,14 @@
                     localStorage.setItem("contentInDisk", res.data.data[0]);
                     localStorage.setItem("contentInEditor", res.data.data[0]);
                     iframe.postMessage("[view]" + res.data.data[0], '*');
-                    this.urls = res.data.data[1];
-                    // iframe.location.reload();
+                    for (let i = 0; i < res.data.data[1].length; i++) {
+                        this.urls.push({
+                            url: res.data.data[1][i],
+                            picName: res.data.data[1][i].replace("http://localhost:6630/images/", "")
+                        });
+                    }
+                    console.log(this.urls)
+                    // this.urls = res.data.data[1];
                 })
             },
 
@@ -492,7 +507,7 @@
                         // 清空图片名的输入框
                         this.userSetPicName = '';
                         // 将新截的图的url放入urls
-                        this.urls.push('http://localhost:6630/images/' + picName);
+                        this.urls.push({picName: picName, url: 'http://localhost:6630/images/' + picName});
                         this.$notify.success({
                             title: '截图成功',
                             message: picName
