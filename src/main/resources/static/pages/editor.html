@@ -441,22 +441,21 @@
                                 message: '脚本已保存至' + this.scriptsPath,
                             });
                             let deletedPicNames = res.data.data;
-                            if (deletedPicNames.length > 0)
-                            // 更新urls，保证右侧图片显示同步
-                            for (let i = 0; i < deletedPicNames.length; i++) {
-                                for (let j = 0; j < this.urls.length; j++) {
-                                    if (deletedPicNames[i] === this.urls[j].picName) {
-                                        this.urls.splice(j, 1);
+                            if (deletedPicNames.length > 0) {
+                                // 更新urls，保证右侧图片显示同步
+                                for (let i = 0; i < deletedPicNames.length; i++) {
+                                    for (let j = 0; j < this.urls.length; j++) {
+                                        if (deletedPicNames[i] === this.urls[j].picName) {
+                                            this.urls.splice(j, 1);
+                                        }
                                     }
                                 }
+                                this.$notify.info({
+                                    title: '已删除未使用的图片',
+                                    message: deletedPicNames,
+                                    offset: 100,
+                                });
                             }
-                            console.log(this.urls);
-                            this.$notify.info({
-                                title: '已删除未使用的图片',
-                                message: deletedPicNames,
-                                offset: 100,
-                            });
-
                         } else {
                             this.$notify.error({
                                 title: '保存出错',
