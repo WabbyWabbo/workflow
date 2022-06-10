@@ -442,13 +442,9 @@
                             });
                             let deletedPicNames = res.data.data;
                             if (deletedPicNames.length > 0)
-                                console.log(deletedPicNames);
-                            console.log(this.urls);
                             // 更新urls，保证右侧图片显示同步
                             for (let i = 0; i < deletedPicNames.length; i++) {
                                 for (let j = 0; j < this.urls.length; j++) {
-                                    console.log(deletedPicNames[i]);
-                                    console.log(this.urls[j].picName);
                                     if (deletedPicNames[i] === this.urls[j].picName) {
                                         this.urls.splice(j, 1);
                                     }
