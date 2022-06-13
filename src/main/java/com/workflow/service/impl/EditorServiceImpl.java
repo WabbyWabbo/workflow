@@ -13,6 +13,7 @@ import org.springframework.util.FileSystemUtils;
 import vo.Result;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.RenderedImage;
@@ -273,6 +274,17 @@ public class EditorServiceImpl implements EditorService {
         com.workflow.resp.data.Result result = Command.execScriptToResult(sikuliPath, absoluteScriptPath);
         // 返回浏览器
         RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
+        // 弹出系统提示框
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                JFrame frame = new JFrame();
+                frame.setAlwaysOnTop(true);
+                log.info("Show message dialog.");
+                JOptionPane.showMessageDialog(frame, "脚本执行结束！", "运行完成", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        t.start();
+
         return Result.success(result);
     }
 
