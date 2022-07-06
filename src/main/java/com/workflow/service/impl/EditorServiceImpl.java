@@ -268,12 +268,12 @@ public class EditorServiceImpl implements EditorService {
             return Result.fail(300, "脚本内容为空，请先点击保存！");
         }
         // 最小化浏览器
-        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_SPACE, KeyEvent.VK_N);
+        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_SPACE);
+        RobotUtil.pressSingleKeyByNumber(KeyEvent.VK_N);
         // 执行脚本
         log.info("Ready to run: " + absoluteScriptPath);
         com.workflow.resp.data.Result result = Command.execScriptToResult(sikuliPath, absoluteScriptPath);
-        // 返回浏览器
-        RobotUtil.pressMultipleKeyByNumber(KeyEvent.VK_ALT, KeyEvent.VK_TAB);
+
         // 弹出系统提示框
         Thread t = new Thread(new Runnable() {
             public void run() {

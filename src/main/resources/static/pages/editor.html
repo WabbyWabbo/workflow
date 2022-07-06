@@ -247,15 +247,24 @@
         <el-drawer
                 :title="editingName"
                 :visible.sync="allInfoDrawer">
-            <el-input
-                    type="textarea"
-                    autosize
-                    placeholder="日志展示区"
-                    :show-word-limit="true"
-                    :readonly="true"
-                    v-model="allInfo"
-                    style="font-family: Helvetica Neue">
-            </el-input>
+            <div style="padding-left: 20px; margin-bottom: 10px">
+                运行结果：
+                <el-tag>
+                    {{ pass }}
+                </el-tag>
+            </div>
+            <div style="padding: 20px">
+                <el-input
+                        type="textarea"
+                        autosize
+                        placeholder="日志展示区"
+                        :show-word-limit="true"
+                        :readonly="true"
+                        v-model="allInfo"
+                        style="font-family: Helvetica Neue">
+                </el-input>
+                <!--                <pre>{{allInfo}}</pre>-->
+            </div>
         </el-drawer>
 
         <el-dialog
@@ -315,6 +324,7 @@
                 isRunFinished: false,
                 askBeforeViewOthersDialogVisible: false,
                 currentRow: {},
+                pass: '',
             };
         },
         watch: {},
@@ -613,6 +623,7 @@
                     console.log(res.data);
                     if (res.data.success) {
                         this.allInfo = res.data.data.allInfo;
+                        this.pass = res.data.data.pass;
                         this.$notify.success({
                             title: '运行完成',
                             message: '结果：' + res.data.data.pass

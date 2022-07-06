@@ -3,7 +3,6 @@ package com.workflow.util;
 import lombok.extern.java.Log;
 
 import java.awt.*;
-import java.util.logging.Level;
 
 @Log
 public class RobotUtil {
@@ -21,7 +20,7 @@ public class RobotUtil {
             /**松开按键*/
             robot.keyRelease(keycode);
             /**可以稍作延时处理*/
-            robot.delay(500);
+            robot.delay(50);
         } catch (AWTException e) {
             e.printStackTrace();
         }

@@ -15,27 +15,27 @@ public class EditorController {
     EditorService editorService;
 
     @PostMapping("/editor/viewScript")
-    public Result editScript(@RequestBody HashMap<String, String> map){
+    public Result editScript(@RequestBody HashMap<String, String> map) {
         return editorService.viewScript(map);
     }
 
     @PostMapping("/editor/saveScript")
-    public Result saveScript(@RequestBody HashMap<String, String> map){
+    public Result saveScript(@RequestBody HashMap<String, String> map) {
         return editorService.saveContent(map);
     }
 
     @PostMapping("/editor/capture")
-    public Result snipPicture(@RequestBody HashMap<String, String> map){
+    public Result snipPicture(@RequestBody HashMap<String, String> map) {
         return editorService.capture(map);
     }
 
     @PostMapping("/editor/previewPic")
-    public Result previewPicture(@RequestBody HashMap<String, String> map){
+    public Result previewPicture(@RequestBody HashMap<String, String> map) {
         return editorService.previewPicture(map);
     }
 
     @PostMapping("/editor/createScript")
-    public Result createScript(@RequestBody HashMap<String, String> map){
+    public Result createScript(@RequestBody HashMap<String, String> map) {
         return editorService.createRealScript(map);
     }
 
